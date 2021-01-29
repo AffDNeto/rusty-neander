@@ -1,21 +1,23 @@
+
 use wasm_bindgen::prelude::*;
-use neander;
+use crate::neander::NeanderCPU;
 
 #[wasm_bindgen]
-struct NeanderJS {
+pub struct NeanderJS {
     cpu: NeanderCPU
 }
 
 #[wasm_bindgen]
 impl NeanderJS {
+    #[wasm_bindgen(constructor)]
     pub fn new() -> NeanderJS {
         NeanderJS{
-            cpu: NeanderJS{..Default::default()}
+            cpu: NeanderCPU{..Default::default()}
         }
     }
-
+    
     pub fn get_acc(&self) -> u8 {
-        self.cpu.accumulator;
+        return self.cpu.accumulator;
     }
-
+    
 }
