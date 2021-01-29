@@ -1,3 +1,4 @@
+mod neander;
 
 pub struct NeanderCPU {
     pub mem: [u8; 256],
