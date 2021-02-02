@@ -179,7 +179,7 @@ mod neander_tests{
 
     #[test]
     fn create_cpu() {
-        let mut cpu = NeanderCPU{..Default::default()};
+        let cpu = NeanderCPU{..Default::default()};
         assert_eq!(cpu.program_counter, 0);
         assert_eq!(cpu.accumulator, 0);
         assert_eq!(cpu.zero_flag, false);

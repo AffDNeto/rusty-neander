@@ -10,7 +10,9 @@ module.exports = {
         filename: 'index.js',
     },
     plugins: [
-        new HtmlWebpackPlugin(),
+        new HtmlWebpackPlugin({
+            template: 'neander.html'
+        }),
         new WasmPackPlugin({
             crateDirectory: path.resolve(__dirname, ".")
         }),

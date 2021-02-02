@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="./clusterize.css">
+        <script src="./clusterize.min.js"></script>
+        <title>Wasm Neander</title>
+    </head>
+    <body>
+        <div class="neander">
+            <h2>Neander Wasm</h2>
+            <div class="controls">
+                <input type="button" value="Step" class="stepButton">
+                <input type="button" value="Run" class="runButton">
+                <input type="text" name="steps to run" id="stepNum" class="steps">
+            </div>
+            <div id="memoryTable" class="clusterize">
+                <table>
+                    <thead>
+                        <tr>
+                            <td>pos</td>
+                            <td>value</td>
+                            <td>Mnemônico</td>
+                        </tr>
+                    </thead>
+                </table>
+                <div id="scrollArea" class="clusterize-scroll">
+                    <table>
+                        <tbody id="memContent" class="clusterize-content">
+                            <tr class="clusterize-no-data">
+                                Loading memory...
+                            
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

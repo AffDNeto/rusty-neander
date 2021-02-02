@@ -13,6 +13,5 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn greet(name: &str) {
-    let p = NeanderJS::new();
     log("Hello finally!")
 }
