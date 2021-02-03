@@ -4,14 +4,14 @@ const webpack = require('webpack');
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 module.exports = {
-    entry: './index.js',
+    entry: './js/index.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.js',
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: 'neander.html'
+            template: './js/neander.html'
         }),
         new WasmPackPlugin({
             crateDirectory: path.resolve(__dirname, ".")
@@ -23,6 +23,18 @@ module.exports = {
           TextEncoder: ['text-encoding', 'TextEncoder']
         })
     ],
-    mode: 'development'
+    mode: 'development',
+    module: {
+        rules: [
+            {
+
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader'
+                ]
+            }
+        ]
+    }
 };
 
