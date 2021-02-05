@@ -1,17 +1,16 @@
 {
   "scripts": {
-    "build": "webpack index.js --output-file=bundle.js --mode=development",
-    "serve": "webpack-dev-server",
-    "hot": "webpack server ---hot=only"
+    "build": "webpack --verbose",
+    "serve": "webpack-dev-server"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "1.0.1",
+    "css-loader": "^5.0.1",
     "html-webpack-plugin": "^3.2.0",
+    "style-loader": "^2.0.0",
+    "text-encoding": "^0.7.0",
     "webpack": "^4.29.4",
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.0"
-  },
-  "dependencies": {
-    "clusterize.js": "^0.18.1"
   }
 }

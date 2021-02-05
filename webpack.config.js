@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 module.exports = {
-    entry: './js/index.js',
+    entry: path.resolve(__dirname, 'js', 'index.js'),
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.js',
@@ -27,7 +27,6 @@ module.exports = {
     module: {
         rules: [
             {
-
                 test: /\.css$/,
                 use: [
                     'style-loader',

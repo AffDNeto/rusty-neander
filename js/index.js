@@ -4,19 +4,20 @@
 require('./neander.js');
 require('./neander.css');
 
-import "./neander";
-import { MemTableControler } from "./neander";
+import { MemTableControler, NeanderViewModel, RegisterController } from "./neander";
 
 const rust = import('../pkg');
-var nn;
+
+var rustModule;
 rust
-  .then(m => { m.greet('World!'); nn = m } )
+  .then(m => { m.greet('World!'); window.rustModule = m; load() } )
   .catch(console.error);
 
-window.onload = function() {
+function load() {
   window.mem = MemTableControler;
-  var memTb = new MemTableControler(document.getElementById("memContainer"), 10);
-  window.mem_control = memTb
-  memTb.init();
-  memTb.updateTable([0, 1, 2, 4, 5, 6, 7, 12, 14, 15]);
+  window.reg = RegisterController;
+  window.view = NeanderViewModel;
+
+  window.NeanderView = new NeanderViewModel(document.getElementById('neanderUi'), new window.rustModule.NeanderJS());
+
 }

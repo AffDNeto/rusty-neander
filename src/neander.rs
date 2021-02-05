@@ -17,7 +17,7 @@ impl Default for NeanderCPU {
             program_counter: 0,
             ri: 0,
             negative_flag: false,
-            zero_flag: false,
+            zero_flag: true,
             mem_access_counter: 0,
             instruction_counter: 0
         }

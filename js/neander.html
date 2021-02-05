@@ -4,16 +4,15 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width">
         <title>Wasm Neander</title>
-        <script src="./index.js" type="text/javascript"></script>
         <link rel="stylesheet" type="text/css" src="neander.css">
     </head>
     <body>
-        <div class="neander">
+        <div class="neander" id="neanderUi">
             <h2>Neander Wasm</h2>
             <div class="controls">
-                <input type="button" value="Step" class="stepButton">
-                <input type="button" value="Run" class="runButton">
-                <input type="text" name="steps to run" id="stepNum" class="steps">
+                <input type="button" value="Step" class="stepButton" id="btnStep">
+                <input type="button" value="Run" class="runButton" id='btnRun'>
+                <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="steps">
             </div>
 
             <div id="tableContainer" class="tableContainer">
@@ -29,6 +28,26 @@
                        <tr class="normalRow"></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div id="registerContainer">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>AC<input id="accInput" type="number"></td>
+                            <td>PC<input id="pcInput" type="number"> </td>
+                        </tr>
+                        <tr>
+                            <td>Negative<input id="negativeFlag" type="checkbox" readonly></td>
+                            <td>Zero<input id="zeroFlag" type="checkbox" readonly></td>
+                        </tr>
+                        <tr>
+                            <td>Acesso<input id="memAccess" type="number" readonly></td>
+                            <td>Instruções<input id="instCount" type="number" readonly></td>
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
             </div>
         </div>
     </body>
