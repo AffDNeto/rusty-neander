@@ -86,27 +86,24 @@ export class RegisterController {
 export class NeanderViewModel {
   constructor(node, model) {
     this.node = node;
+    this.cpu = model;
 
     this.memMap = document.querySelector(`#${this.node.id} #memContainer`);
     this.memMap = new MemTableControler(this.memMap, 256);
     this.memMap.init();
     
-    this.reg = document.querySelector(`#${this.node.id} #registerContainer`);
-    this.reg = new RegisterController(this.reg);
-    this.reg.init();
-
-    this.reg.pcInput.onchange = (e) => { 
-      var nv = Number(e.target.value);
-      console.log(nv);
-      if ( isNaN(nv) || !(0 <= nv <= 255) )  return false
-      this.cpu.set_pc(nv)
-      this.reg.pcInput.value = nv
-      return true
-    };
-    
-    this.cpu = model;
+    this.setupRegistersView()
+    this.setupExecuteView();
     this.updateView();
+    
+  }
 
+  setReg(event) {
+    nv = event.value;
+
+  }
+
+  setupExecuteView() {
     this.stepsInput = document.querySelector(`#${this.node.id} #stepNum`);
     this.excuteSteps = 10;
     this.stepsInput.value = this.excuteSteps;
@@ -118,11 +115,28 @@ export class NeanderViewModel {
     this.btnRun.onclick = this.run.bind(this);
   }
 
-  setReg(event) {
-    nv = event.value;
+  setupRegistersView() {
+    this.reg = document.querySelector(`#${this.node.id} #registerContainer`);
+    this.reg = new RegisterController(this.reg);
+    this.reg.init();
 
+    //sets up the callbacks for updating the registers
+    this.reg.pcInput.onchange = (e) => { 
+      var nv = Number(e.target.value);
+      if ( isNaN(nv) || !(0 <= nv <= 255) )  return false
+      this.cpu.set_pc(nv)
+      this.reg.pcInput.value = nv
+      return true
+    };
+    
+    this.reg.accInput.onchange = (e) => { 
+      var nv = Number(e.target.value);
+      if ( isNaN(nv) || !(0 <= nv <= 255) )  return false
+      this.cpu.set_acc(nv)
+      this.reg.accInput.value = nv
+      return true
+    };
   }
-
   updateExecuteSteps(event){
     var newValue = Number(event.target.value);
     if ( isNaN(newValue) || newValue < 1 ) {

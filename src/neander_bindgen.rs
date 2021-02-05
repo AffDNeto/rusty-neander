@@ -54,4 +54,8 @@ impl NeanderJS {
     pub fn set_pc(&mut self, new_pc: u8) {
         self.cpu.program_counter = new_pc;
     }
+
+    pub fn set_acc(&mut self, new_acc: u8) {
+        self.cpu.accumulator = new_acc;
+    }
 }
