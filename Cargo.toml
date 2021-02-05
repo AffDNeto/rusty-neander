@@ -1,6 +1,7 @@
 [package]
 name = "wasm_emulators"
-version = "0.1.0"
+description = "Implementação em rust dos maquinas hipoteticas usadas para ensino"
+version = "0.1.1"
 authors = ["Affonso Neto"]
 edition = "2018"
 

@@ -33,20 +33,20 @@ impl NeanderCPU {
     }
 
     pub fn do_instruction(&mut self, op_code: u8) -> bool {
-        ///let op = ( op_code & 0xF0 ) >> 4;
+        let op = ( op_code & 0xF0 ) >> 4;
 
-        match op_code {
-            0x00 => return self.no_operation(),
-            0x10 => return self.store(),
-            0x20 => return self.load(),
-            0x30 => return self.add(),
-            0x40 => return self.or(),
-            0x50 => return self.and(),
-            0x60 => return self.not(),
-            0x80 => return self.jump(),
-            0x90 => return self.jump_negative(),
-            0xA0 => return self.jump_zero(),
-            0xF0 => return self.halt(),
+        match op {
+            0x0 => return self.no_operation(),
+            0x1 => return self.store(),
+            0x2 => return self.load(),
+            0x3 => return self.add(),
+            0x4 => return self.or(),
+            0x5 => return self.and(),
+            0x6 => return self.not(),
+            0x8 => return self.jump(),
+            0x9 => return self.jump_negative(),
+            0xA => return self.jump_zero(),
+            0xF => return self.halt(),
             _ => return self.halt()
         }
     }
