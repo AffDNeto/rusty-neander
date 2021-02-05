@@ -4,7 +4,11 @@
 require('./neander.js');
 require('./neander.css');
 
-import { MemTableControler, NeanderViewModel, RegisterController } from "./neander";
+import { 
+  MemTableControler, 
+  NeanderViewModel, 
+  RegisterController 
+} from "./neander";
 
 const rust = import('../pkg');
 
@@ -18,6 +22,9 @@ function load() {
   window.reg = RegisterController;
   window.view = NeanderViewModel;
 
-  window.NeanderView = new NeanderViewModel(document.getElementById('neanderUi'), new window.rustModule.NeanderJS());
+  window.NeanderView = new NeanderViewModel(
+    document.getElementById('neanderUi'), 
+    new window.rustModule.NeanderJS()
+    );
 
 }

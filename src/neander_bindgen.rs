@@ -50,4 +50,8 @@ impl NeanderJS {
             cycle_count += 1;
         }
     }
+
+    pub fn set_pc(&mut self, new_pc: u8) {
+        self.cpu.program_counter = new_pc;
+    }
 }

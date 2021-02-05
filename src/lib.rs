@@ -1,6 +1,5 @@
 mod neander_bindgen; 
 mod neander;
-use neander_bindgen::NeanderJS;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -13,5 +12,5 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn greet(name: &str) {
-    log("Hello finally!")
+    log("Canary hello!")
 }

@@ -94,6 +94,15 @@ export class NeanderViewModel {
     this.reg = document.querySelector(`#${this.node.id} #registerContainer`);
     this.reg = new RegisterController(this.reg);
     this.reg.init();
+
+    this.reg.pcInput.onchange = (e) => { 
+      var nv = Number(e.target.value);
+      console.log(nv);
+      if ( isNaN(nv) || !(0 <= nv <= 255) )  return false
+      this.cpu.set_pc(nv)
+      this.reg.pcInput.value = nv
+      return true
+    };
     
     this.cpu = model;
     this.updateView();
@@ -107,6 +116,11 @@ export class NeanderViewModel {
     
     this.btnRun = document.querySelector(`#${this.node.id} #btnRun`);
     this.btnRun.onclick = this.run.bind(this);
+  }
+
+  setReg(event) {
+    nv = event.value;
+
   }
 
   updateExecuteSteps(event){
