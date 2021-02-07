@@ -58,4 +58,8 @@ impl NeanderJS {
     pub fn set_acc(&mut self, new_acc: u8) {
         self.cpu.accumulator = new_acc;
     }
+
+    pub fn set_mem(&mut self, pos: u8, value: u8){
+        self.cpu.mem[pos as usize] = value;
+    }
 }

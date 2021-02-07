@@ -16,11 +16,17 @@ export class MemTableControler {
 
   init () {
     var tb = this.memory_table;
-  
+    tb.onclick = (e) => {
+      let parent = e.target.parentElement;
+      if ( parent.tagName == 'TR' ) {
+        this.onRowClick(parent.rowIndex);
+      }
+    };
+
     for ( var i = 0, ii = this.rowsLen; i < ii; i++ ) {
       var row = tb.insertRow();
       row.classList.add("normalRow");
-      
+  
       this.addCell(row, i);    
       this.addCell(row, "0");    
       this.addCell(row, "00");    
@@ -41,7 +47,7 @@ export class MemTableControler {
     row.children[2].textContent = this.int2Hex(new_value);
   
   }
-
+  
   updateTable(newData) {
     if ( newData == undefined ) { throw "No data given." }
     if ( newData.length != this.rowsLen ) { 
@@ -88,19 +94,42 @@ export class NeanderViewModel {
     this.node = node;
     this.cpu = model;
 
-    this.memMap = document.querySelector(`#${this.node.id} #memContainer`);
-    this.memMap = new MemTableControler(this.memMap, 256);
-    this.memMap.init();
-    
+    this.setupMemoryView()
     this.setupRegistersView()
     this.setupExecuteView();
     this.updateView();
     
   }
 
-  setReg(event) {
-    nv = event.value;
+  setupMemoryView(event) {
+    this.memMap = document.querySelector(`#${this.node.id} #memContainer`);
+    this.memMap = new MemTableControler(this.memMap, 256);
+    this.memMap.init();
+    this.memMap.onRowClick = (r) => {this.updateSelectedRow(r);}
+    
+    this.memInput = document.querySelector(`#${this.node.id} #memInput`);
+    this.memInput.onchange = (e) =>
+    {
+      var nv = Number(e.target.value);
+      if ( isNaN(nv) || !(0 <= nv && nv <= 255) )  return false
+      this.cpu.set_mem(this.selectedMemPos, nv);
+      this.memMap.updateRow(this.selectedMemPos+1, nv);
+      e.target.value = nv;
+      return true
+    }
+    this.selectedMemPos = 0;
+    this.posLabel = document.querySelector(`#${this.node.id} #selMem`);
+    this.posLabel.textContent = this.selectedMemPos;
 
+  }
+
+  updateSelectedRow(rowIndex) {
+    console.log(rowIndex)
+    console.log(this.cpu.get_state().mem[rowIndex-1])
+    this.selectedMemPos = rowIndex-1;
+    this.posLabel.textContent = this.selectedMemPos;
+    this.memInput.value = this.cpu.get_state().mem[this.selectedMemPos];
+    this.memInput.focus();
   }
 
   setupExecuteView() {
@@ -123,15 +152,16 @@ export class NeanderViewModel {
     //sets up the callbacks for updating the registers
     this.reg.pcInput.onchange = (e) => { 
       var nv = Number(e.target.value);
-      if ( isNaN(nv) || !(0 <= nv <= 255) )  return false
+      if ( isNaN(nv) || !(0 <= nv && nv <= 255) )  return false
       this.cpu.set_pc(nv)
       this.reg.pcInput.value = nv
+      e.target.value = nv
       return true
     };
     
     this.reg.accInput.onchange = (e) => { 
       var nv = Number(e.target.value);
-      if ( isNaN(nv) || !(0 <= nv <= 255) )  return false
+      if ( isNaN(nv) || !(0 <= nv && nv <= 255) )  return false
       this.cpu.set_acc(nv)
       this.reg.accInput.value = nv
       return true
