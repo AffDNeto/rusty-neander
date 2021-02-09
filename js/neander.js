@@ -98,9 +98,27 @@ export class NeanderViewModel {
     this.setupRegistersView()
     this.setupExecuteView();
     this.updateView();
-    
+    this.setupMemImporter();
   }
 
+  setupMemImporter(){
+    this.memFileInput = this.node.querySelector("#memFile");
+    this.memFileInput.onchange = (e) => {
+      console.log("laoding file")
+      var reader = new FileReader();
+      reader.onload = (e) => {
+        console.log("file loaded  ")
+        var mem = readMemFile(e.target.result);
+        this.memMap.updateTable(mem);
+      }
+      reader.readAsArrayBuffer(e.target.files[0]);
+      
+
+    }
+    this.fileReader = new FileReader();
+
+
+  }
   setupMemoryView(event) {
     this.memMap = document.querySelector(`#${this.node.id} #memContainer`);
     this.memMap = new MemTableControler(this.memMap, 256);
@@ -198,3 +216,17 @@ export class NeanderViewModel {
 
 
 }
+
+export function readMemFile(fileByteArray){
+  const header = new Uint8Array(fileByteArray, 0, 4);
+  const mem = new Uint8Array(fileByteArray, 4);
+  var memArray = []
+  for(var i=0; i < mem.length; i +=2){ // Skips every other byte because the file format is like this
+    memArray[i/2] = mem[i];
+  }
+
+  return memArray
+
+}
+
+window.readMemFile = readMemFile;

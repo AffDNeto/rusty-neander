@@ -7,7 +7,8 @@ require('./neander.css');
 import { 
   MemTableControler, 
   NeanderViewModel, 
-  RegisterController 
+  RegisterController,
+  readMemFile
 } from "./neander";
 
 const rust = import('../pkg');
