@@ -11,7 +11,7 @@ import {
   readMemFile
 } from "./neander";
 
-const rust = import('../pkg');
+const rust = import('../crate-wasm/pkg');
 
 var rustModule;
 rust

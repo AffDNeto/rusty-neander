@@ -1,2 +1,5 @@
 node_modules
 target
+crate-wasm/pkg
+www/pkg
+dist

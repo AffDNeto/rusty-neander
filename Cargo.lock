@@ -169,7 +169,7 @@ checksum = "7e7811dd7f9398f14cc76efd356f98f03aa30419dea46aa810d71e819fc97158"
 
 [[package]]
 name = "wasm_emulators"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "serde",
  "wasm-bindgen",
