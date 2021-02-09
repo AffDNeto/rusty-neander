@@ -1,26 +1,24 @@
-use crate::common::ExecuteCycle;
+use crate::common::{ExecuteCycle, Memory, Memory256};
 
 pub struct NeanderCPU {
-    pub mem: [u8; 256],
+    pub mem: Memory256,
     pub accumulator: u8,
     pub program_counter: u8,
     pub ri: u8,
     pub negative_flag: bool,
     pub zero_flag: bool,
-    pub mem_access_counter: usize,
     pub instruction_counter: usize
 }
 
 impl Default for NeanderCPU {
     fn default() -> NeanderCPU {
         NeanderCPU{
-            mem : [ 0; 256],
+            mem : Memory256 {..Default::default()},
             accumulator: 0,
             program_counter: 0,
             ri: 0,
             negative_flag: false,
             zero_flag: true,
-            mem_access_counter: 0,
             instruction_counter: 0
         }
     }
@@ -47,7 +45,7 @@ impl ExecuteCycle<u8> for NeanderCPU {
     }
     
     fn read_pc(&mut self) -> u8 {
-        let value = self.read_byte(self.program_counter);
+        let value = self.mem.direct_read(self.program_counter);
         self.program_counter = self.program_counter.wrapping_add(1);
         
         return value;
@@ -55,16 +53,6 @@ impl ExecuteCycle<u8> for NeanderCPU {
 }
 
 impl NeanderCPU{
-    fn read_byte(&mut self, address: u8) -> u8 {
-        self.mem_access_counter += 1;
-        return self.mem[address as usize];
-    }
-    
-    fn write_byte(&mut self, address: u8, data: u8) {
-        self.mem_access_counter += 1;
-        self.mem[address as usize] = data;
-    }
-
     /// Loads accumulator with a value and set the proper flags.
     pub fn load_accumulator(&mut self, value: u8) {
         self.accumulator = value;
@@ -90,14 +78,14 @@ impl NeanderCPU{
     /// Writes accumulator value to memory
     pub fn store(&mut self) -> bool {
         let position = self.read_pc();
-        self.write_byte(position, self.accumulator);
+        self.mem.direct_write(position, self.accumulator);
         return true;
     }
 
     /// Read memory position to accumulator
     pub fn load(&mut self) -> bool {
         let position = self.read_pc();
-        let value = self.read_byte(position);
+        let value = self.mem.direct_read(position);
         self.load_accumulator(value);
         return true;
     }
@@ -105,7 +93,7 @@ impl NeanderCPU{
     /// Add memory value with accumulator value and stores to it
     pub fn add(&mut self) -> bool {
         let position = self.read_pc();
-        let value = self.read_byte(position);
+        let value = self.mem.direct_read(position);
 
         self.load_accumulator(self.accumulator.wrapping_add(value));
 
@@ -115,7 +103,7 @@ impl NeanderCPU{
     /// Bitwise OR operation
     pub fn or(&mut self) -> bool {
         let position = self.read_pc();
-        let value = self.read_byte(position);
+        let value = self.mem.direct_read(position);
 
         self.load_accumulator(self.accumulator | value);
         
@@ -125,7 +113,7 @@ impl NeanderCPU{
     /// Bitwise AND operation
     pub fn and(&mut self) -> bool {
         let position = self.read_pc();
-        let value = self.read_byte(position);
+        let value = self.mem.direct_read(position);
 
         self.load_accumulator(self.accumulator & value);
         
@@ -181,7 +169,7 @@ mod neander_tests{
         assert_eq!(cpu.accumulator, 0);
         assert_eq!(cpu.zero_flag, false);
         assert_eq!(cpu.negative_flag, false);
-        assert_eq!(cpu.mem, [0;256]);   
+        assert_eq!(cpu.mem.dump(), [0;256].to_vec());   
     }
 
     #[test]
@@ -196,18 +184,18 @@ mod neander_tests{
     #[test]
     fn write_test(){
         let mut cpu = NeanderCPU{..Default::default()};
-        cpu.write_byte(0, 4);
+        cpu.mem.direct_write(0, 4);
 
-        assert_eq!(cpu.mem[0], 4);
-        assert_eq!(cpu.mem_access_counter, 1);
+        assert_eq!(cpu.mem.mem[0], 4);
+        assert_eq!(cpu.mem.access_counter, 1);
     }
 
     #[test]
     fn read_test(){
         let mut cpu = NeanderCPU{..Default::default()};
-        cpu.mem[0] = 4;
+        cpu.mem.mem[0] = 4;
 
-        assert_eq!(cpu.read_byte(4), 4);
-        assert_eq!(cpu.mem_access_counter, 1);
+        assert_eq!(cpu.mem.direct_read(4), 4);
+        assert_eq!(cpu.mem.access_counter, 1);
     }
 }

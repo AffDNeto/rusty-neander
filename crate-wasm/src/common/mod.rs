@@ -29,8 +29,12 @@ pub trait Memory<T> {
 }
 
 pub struct Memory256 {
-    mem: [u8; 256],
-    access_counter: usize
+    pub mem: [u8; 256],
+    pub access_counter: usize
+}
+
+impl Default for Memory256 {
+    fn default() -> Self { Memory256 { mem: [0;256], access_counter: 0} }
 }
 
 impl Memory<u8> for Memory256 {

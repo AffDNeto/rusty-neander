@@ -1,9 +1,6 @@
-
-use std::convert::TryInto;
-
 use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
-use crate::{common::ExecuteCycle, neander::NeanderCPU};
+use crate::{common::{ExecuteCycle, Memory}, neander::NeanderCPU};
 
 #[wasm_bindgen]
 pub struct NeanderJS {
@@ -34,10 +31,10 @@ impl NeanderJS {
         let cpu = ExportedNeander{
             acc: self.cpu.accumulator,
             pc: self.cpu.program_counter,
-            mem: self.cpu.mem.to_vec(),
+            mem: self.cpu.mem.dump(),
             zf: self.cpu.zero_flag,
             nf: self.cpu.negative_flag,
-            mem_access_counter: self.cpu.mem_access_counter,
+            mem_access_counter: self.cpu.mem.access_counter,
             instruction_counter: self.cpu.instruction_counter
         };
         JsValue::from_serde(&cpu).unwrap()
@@ -62,16 +59,11 @@ impl NeanderJS {
     }
 
     pub fn set_mem(&mut self, pos: u8, value: u8){
-        self.cpu.mem[pos as usize] = value;
+        self.cpu.mem._write(pos, value);
     }
 
     pub fn load_mem(&mut self, array:JsValue) {
-        let elemements: Vec<u8> = array.into_serde().unwrap();
-        self.cpu.mem = elemements.try_into()
-            .unwrap_or_else(
-                |v: Vec<u8>| 
-                panic!("Expecteted len {} came {}", v.len(), self.cpu.mem.len()
-            )
-        );
+        let elements: Vec<u8> = array.into_serde().unwrap();
+        self.cpu.mem.load(elements)
     }
 }
