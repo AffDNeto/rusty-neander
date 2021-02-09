@@ -1,4 +1,6 @@
 
+use std::convert::TryInto;
+
 use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
 use crate::neander::NeanderCPU;
@@ -61,5 +63,15 @@ impl NeanderJS {
 
     pub fn set_mem(&mut self, pos: u8, value: u8){
         self.cpu.mem[pos as usize] = value;
+    }
+
+    pub fn load_mem(&mut self, array:JsValue) {
+        let elemements: Vec<u8> = array.into_serde().unwrap();
+        self.cpu.mem = elemements.try_into()
+            .unwrap_or_else(
+                |v: Vec<u8>| 
+                panic!("Expecteted len {} came {}", v.len(), self.cpu.mem.len()
+            )
+        );
     }
 }

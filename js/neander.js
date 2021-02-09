@@ -109,7 +109,8 @@ export class NeanderViewModel {
       reader.onload = (e) => {
         console.log("file loaded  ")
         var mem = readMemFile(e.target.result);
-        this.memMap.updateTable(mem);
+        this.cpu.load_mem(mem)
+        this.updateView();
       }
       reader.readAsArrayBuffer(e.target.files[0]);
       
