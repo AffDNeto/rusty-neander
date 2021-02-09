@@ -3,7 +3,7 @@ use std::convert::TryInto;
 
 use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
-use crate::neander::NeanderCPU;
+use crate::{common::ExecuteCycle, neander::NeanderCPU};
 
 #[wasm_bindgen]
 pub struct NeanderJS {

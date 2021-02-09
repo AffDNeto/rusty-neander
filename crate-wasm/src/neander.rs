@@ -1,3 +1,5 @@
+use crate::common::ExecuteCycle;
+
 pub struct NeanderCPU {
     pub mem: [u8; 256],
     pub accumulator: u8,
@@ -23,18 +25,11 @@ impl Default for NeanderCPU {
         }
     }
 }
-impl NeanderCPU {
-    pub fn execute_cycle(&mut self) -> bool{
-        let op_code = self.read_pc();
-        let instruction_result = self.do_instruction(op_code);
-        
-        self.instruction_counter += 1;
-        return instruction_result;
-    }
-
-    pub fn do_instruction(&mut self, op_code: u8) -> bool {
+impl ExecuteCycle<u8> for NeanderCPU {
+    
+    fn run_instruction(&mut self, op_code: u8) -> bool {
         let op = ( op_code & 0xF0 ) >> 4;
-
+        self.instruction_counter += 1;
         match op {
             0x0 => return self.no_operation(),
             0x1 => return self.store(),
@@ -57,7 +52,9 @@ impl NeanderCPU {
         
         return value;
     }
+}
 
+impl NeanderCPU{
     fn read_byte(&mut self, address: u8) -> u8 {
         self.mem_access_counter += 1;
         return self.mem[address as usize];
