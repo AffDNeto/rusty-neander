@@ -8,7 +8,7 @@ pub struct AhmesEmulator {
     pub carry_flag: bool,
     pub borrow_flag: bool,
     pub overflow_flag: bool,
-    pub instruction_counter: u8
+    pub instruction_counter: usize
 }
 
 impl Default for AhmesEmulator{
