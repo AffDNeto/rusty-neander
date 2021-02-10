@@ -1,4 +1,4 @@
-use crate::common::BasicOperations;
+use crate::common::NeanderOperations;
 use crate::common::BasicALU;
 use crate::common::{ExecuteCycle, Memory, Memory256};
 
@@ -42,7 +42,7 @@ impl ExecuteCycle<u8> for NeanderCPU {
         }
     }
     
-    fn next_instruction(&mut self) -> u8 {
+    fn next_instruction(&mut self) -> u8{
         let value = self.mem.direct_read(self.read_pc());
         self.increment_pc();
         return value;
@@ -59,7 +59,7 @@ impl BasicALU for NeanderCPU{
     }
 }
 
-impl BasicOperations for NeanderCPU {
+impl NeanderOperations for NeanderCPU {
     /// Writes accumulator value to memory
     fn store(&mut self) -> bool {
         let position = self.next_instruction();

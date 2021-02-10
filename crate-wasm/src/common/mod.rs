@@ -17,7 +17,7 @@ pub trait BasicALU {
     }
 }
 
-pub trait BasicOperations: BasicALU {
+pub trait NeanderOperations: BasicALU {
     /// Stops the cpu from running
     fn halt(&self) -> bool {
         return false
@@ -38,7 +38,23 @@ pub trait BasicOperations: BasicALU {
     fn jump_negative(&mut self) -> bool;
     fn jump_zero(&mut self) -> bool;
 }
-pub trait ExecuteCycle<T> {
+
+pub trait AhmesInstructions {
+    fn jump_non_zero(&mut self) -> bool;
+    fn jump_non_negative(&mut self) -> bool;
+    fn jump_overflow(&mut self) -> bool;
+    fn jump_non_overflow(&mut self) -> bool;
+    fn jump_carry(&mut self) -> bool;
+    fn jump_non_carry(&mut self) -> bool;
+    fn jump_borrow(&mut self) -> bool;
+    fn jump_non_borrow(&mut self) -> bool;
+    fn shift_right(&mut self) -> bool;
+    fn shift_left(&mut self) -> bool;
+    fn rotate_right(&mut self) -> bool;
+    fn rotate_left(&mut self) -> bool;
+}
+
+pub trait ExecuteCycle<T>{
     fn execute_cycle(&mut self) -> bool {
         let op_code = self.next_instruction();
         return self.run_instruction(op_code);
