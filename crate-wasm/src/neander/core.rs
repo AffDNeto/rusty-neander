@@ -6,8 +6,6 @@ pub struct NeanderCPU {
     pub mem: Memory256,
     pub registers: [u8; 2],
     pub accumulator: u8,
-    pub program_counter: u8,
-    pub ri: u8,
     pub negative_flag: bool,
     pub zero_flag: bool,
     pub instruction_counter: usize
@@ -19,8 +17,6 @@ impl Default for NeanderCPU {
             mem : Memory256 {..Default::default()},
             registers: [0; 2],
             accumulator: 0,
-            program_counter: 0,
-            ri: 0,
             negative_flag: false,
             zero_flag: true,
             instruction_counter: 0
@@ -49,9 +45,8 @@ impl ExecuteCycle<u8> for NeanderCPU {
     }
     
     fn next_instruction(&mut self) -> u8 {
-        let value = self.mem.direct_read(self.program_counter);
-        self.program_counter = self.program_counter.wrapping_add(1);
-        
+        let value = self.mem.direct_read(self.read_pc());
+        self.increment_pc();
         return value;
     }
 }
@@ -122,7 +117,7 @@ impl BasicOperations for NeanderCPU {
     /// Jumps (program counter) to memory position unconditionaly
     fn jump(&mut self) -> bool {
         let position = self.next_instruction();
-        self.program_counter = position;
+        self.set_pc(position);
         return true;
     }
 
@@ -131,7 +126,7 @@ impl BasicOperations for NeanderCPU {
         let position  = self.next_instruction();
 
         if self.negative_flag {
-            self.program_counter = position
+            self.set_pc(position);
         }
         return true;
     }
@@ -141,7 +136,7 @@ impl BasicOperations for NeanderCPU {
         let position  = self.next_instruction();
 
         if self.zero_flag {
-            self.program_counter = position
+            self.set_pc(position);
         }
         return true;
     
@@ -164,7 +159,7 @@ mod neander_tests{
     #[test]
     fn create_cpu() {
         let cpu = NeanderCPU{..Default::default()};
-        assert_eq!(cpu.program_counter, 0);
+        assert_eq!(cpu.read_pc(), 0);
         assert_eq!(cpu.accumulator, 0);
         assert_eq!(cpu.zero_flag, false);
         assert_eq!(cpu.negative_flag, false);

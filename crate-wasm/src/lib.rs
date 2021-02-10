@@ -1,5 +1,5 @@
-mod neander_bindgen; 
 mod neander;
+mod ahmes;
 mod common;
 use wasm_bindgen::prelude::*;
 

@@ -9,6 +9,9 @@ pub trait BasicALU {
         self.read_register(0)
     }
 
+    fn set_pc(&mut self, value: u8) {
+        self.write_register(0, value)
+    }
     fn increment_pc(&mut self) {
         self.write_register(0,self.read_pc().wrapping_add(1))
     }

@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
-use crate::{common::{ExecuteCycle, Memory}, neander::NeanderCPU};
+use crate::{common::{BasicALU, ExecuteCycle, Memory}, neander::core::NeanderCPU};
 
 #[wasm_bindgen]
 pub struct NeanderJS {
@@ -30,7 +30,7 @@ impl NeanderJS {
     pub fn get_state(&self) -> JsValue {
         let cpu = ExportedNeander{
             acc: self.cpu.accumulator,
-            pc: self.cpu.program_counter,
+            pc: self.cpu.read_pc(),
             mem: self.cpu.mem.dump(),
             zf: self.cpu.zero_flag,
             nf: self.cpu.negative_flag,
@@ -51,7 +51,7 @@ impl NeanderJS {
     }
 
     pub fn set_pc(&mut self, new_pc: u8) {
-        self.cpu.program_counter = new_pc;
+        self.cpu.set_pc(new_pc);
     }
 
     pub fn set_acc(&mut self, new_acc: u8) {
