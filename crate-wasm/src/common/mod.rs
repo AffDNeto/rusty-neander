@@ -1,13 +1,47 @@
 use std::convert::TryInto;
 
+pub trait BasicALU {
+    fn read_register(&self, id: usize) -> u8;
+    fn write_register(&mut self, id: usize, value: u8);
 
+    //by convention the program counter will always be the first
+    fn read_pc(&self) -> u8 {
+        self.read_register(0)
+    }
+
+    fn increment_pc(&mut self) {
+        self.write_register(0,self.read_pc().wrapping_add(1))
+    }
+}
+
+pub trait BasicOperations: BasicALU {
+    /// Stops the cpu from running
+    fn halt(&self) -> bool {
+        return false
+    }
+    
+    /// Do no operation at all
+    fn no_operation(&self) -> bool {
+        return true
+    }
+
+    fn store(&mut self) -> bool;
+    fn load(&mut self) -> bool;
+    fn add(&mut self) -> bool;
+    fn or(&mut self) -> bool;
+    fn and(&mut self) -> bool;
+    fn not(&mut self) -> bool;
+    fn jump(&mut self) -> bool;
+    fn jump_negative(&mut self) -> bool;
+    fn jump_zero(&mut self) -> bool;
+}
 pub trait ExecuteCycle<T> {
     fn execute_cycle(&mut self) -> bool {
-        let op_code = self.read_pc();
+        let op_code = self.next_instruction();
         return self.run_instruction(op_code);
     }
 
-    fn read_pc(&mut self) -> T;
+    fn next_instruction(&mut self) -> T;
     fn run_instruction(&mut self, op_code: T) -> bool;
 }
 
@@ -55,8 +89,8 @@ impl Memory<u8> for Memory256 {
         .unwrap_or_else(
             |v: Vec<u8>| 
             panic!("Expecteted len {} but came {}", self.mem.len(), v.len()
-        )
-    );
+            )
+        );
     }
 
     fn dump(&self) -> Vec<u8> {

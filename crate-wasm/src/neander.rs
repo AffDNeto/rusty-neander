@@ -1,7 +1,10 @@
+use crate::common::BasicOperations;
+use crate::common::BasicALU;
 use crate::common::{ExecuteCycle, Memory, Memory256};
 
 pub struct NeanderCPU {
     pub mem: Memory256,
+    pub registers: [u8; 2],
     pub accumulator: u8,
     pub program_counter: u8,
     pub ri: u8,
@@ -14,6 +17,7 @@ impl Default for NeanderCPU {
     fn default() -> NeanderCPU {
         NeanderCPU{
             mem : Memory256 {..Default::default()},
+            registers: [0; 2],
             accumulator: 0,
             program_counter: 0,
             ri: 0,
@@ -44,7 +48,7 @@ impl ExecuteCycle<u8> for NeanderCPU {
         }
     }
     
-    fn read_pc(&mut self) -> u8 {
+    fn next_instruction(&mut self) -> u8 {
         let value = self.mem.direct_read(self.program_counter);
         self.program_counter = self.program_counter.wrapping_add(1);
         
@@ -52,91 +56,79 @@ impl ExecuteCycle<u8> for NeanderCPU {
     }
 }
 
-impl NeanderCPU{
-    /// Loads accumulator with a value and set the proper flags.
-    pub fn load_accumulator(&mut self, value: u8) {
-        self.accumulator = value;
-        self.zero_flag = value == 0;
-        self.negative_flag = value >= i8::MAX as u8;
+impl BasicALU for NeanderCPU{
+    fn read_register(&self, id: usize) -> u8 {
+        self.registers[id]
     }
 
-    ///
-    /// Instructions
-    ///
-    
-    /// Do no operation at all
-    pub fn no_operation(&mut self) -> bool {
-        return true
+    fn write_register(&mut self, id: usize, value: u8) {
+        self.registers[id] = value;
     }
+}
 
-    /// Stops the cpu from running
-    pub fn halt(&mut self) -> bool {
-        self.program_counter = self.program_counter.wrapping_sub(1);
-        return false
-    }
-
+impl BasicOperations for NeanderCPU {
     /// Writes accumulator value to memory
-    pub fn store(&mut self) -> bool {
-        let position = self.read_pc();
+    fn store(&mut self) -> bool {
+        let position = self.next_instruction();
         self.mem.direct_write(position, self.accumulator);
         return true;
     }
 
     /// Read memory position to accumulator
-    pub fn load(&mut self) -> bool {
-        let position = self.read_pc();
+    fn load(&mut self) -> bool {
+        let position = self.next_instruction();
         let value = self.mem.direct_read(position);
-        self.load_accumulator(value);
+        self.set_accumulator(value);
         return true;
     }
     
     /// Add memory value with accumulator value and stores to it
-    pub fn add(&mut self) -> bool {
-        let position = self.read_pc();
+    fn add(&mut self) -> bool {
+        let position = self.next_instruction();
         let value = self.mem.direct_read(position);
 
-        self.load_accumulator(self.accumulator.wrapping_add(value));
+        self.set_accumulator(self.accumulator.wrapping_add(value));
 
         return true;
     }
 
     /// Bitwise OR operation
-    pub fn or(&mut self) -> bool {
-        let position = self.read_pc();
+    fn or(&mut self) -> bool {
+        let position = self.next_instruction();
         let value = self.mem.direct_read(position);
 
-        self.load_accumulator(self.accumulator | value);
+        self.set_accumulator(self.accumulator | value);
         
         return true;
     }
 
     /// Bitwise AND operation
-    pub fn and(&mut self) -> bool {
-        let position = self.read_pc();
+    fn and(&mut self) -> bool {
+        let position = self.next_instruction();
         let value = self.mem.direct_read(position);
 
-        self.load_accumulator(self.accumulator & value);
+        self.set_accumulator(self.accumulator & value);
         
         return true;
     }
 
     /// Bitwise NOT operation on the accumulator
-    pub fn not(&mut self) -> bool {
-        self.load_accumulator(!self.accumulator);
+    fn not(&mut self) -> bool {
+        self.set_accumulator(!self.accumulator);
         
         return true;
     }
 
     /// Jumps (program counter) to memory position unconditionaly
-    pub fn jump(&mut self) -> bool {
-        let position = self.read_pc();
+    fn jump(&mut self) -> bool {
+        let position = self.next_instruction();
         self.program_counter = position;
         return true;
     }
 
     /// Jumps only if negative flag is on
-    pub fn jump_negative(&mut self) -> bool {
-        let position  = self.read_pc();
+    fn jump_negative(&mut self) -> bool {
+        let position  = self.next_instruction();
 
         if self.negative_flag {
             self.program_counter = position
@@ -145,8 +137,8 @@ impl NeanderCPU{
     }
 
     /// Jumps only if zero flag is ON
-    pub fn jump_zero(&mut self) -> bool {
-        let position  = self.read_pc();
+    fn jump_zero(&mut self) -> bool {
+        let position  = self.next_instruction();
 
         if self.zero_flag {
             self.program_counter = position
@@ -154,7 +146,14 @@ impl NeanderCPU{
         return true;
     
     }
-    
+}
+impl NeanderCPU{
+    /// Loads accumulator with a value and set the proper flags.
+    pub fn set_accumulator(&mut self, value: u8) {
+        self.write_register(1, value);
+        self.zero_flag = value == 0;
+        self.negative_flag = value.leading_ones() > 0;
+    } 
 }
 
 #[cfg(test)]
