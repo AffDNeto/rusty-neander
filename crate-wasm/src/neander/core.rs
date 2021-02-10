@@ -5,7 +5,6 @@ use crate::common::{ExecuteCycle, Memory, Memory256};
 pub struct NeanderCPU {
     pub mem: Memory256,
     pub registers: [u8; 2],
-    pub accumulator: u8,
     pub negative_flag: bool,
     pub zero_flag: bool,
     pub instruction_counter: usize
@@ -16,7 +15,6 @@ impl Default for NeanderCPU {
         NeanderCPU{
             mem : Memory256 {..Default::default()},
             registers: [0; 2],
-            accumulator: 0,
             negative_flag: false,
             zero_flag: true,
             instruction_counter: 0
@@ -65,7 +63,7 @@ impl BasicOperations for NeanderCPU {
     /// Writes accumulator value to memory
     fn store(&mut self) -> bool {
         let position = self.next_instruction();
-        self.mem.direct_write(position, self.accumulator);
+        self.mem.direct_write(position, self.read_register(1));
         return true;
     }
 
@@ -82,7 +80,7 @@ impl BasicOperations for NeanderCPU {
         let position = self.next_instruction();
         let value = self.mem.direct_read(position);
 
-        self.set_accumulator(self.accumulator.wrapping_add(value));
+        self.set_accumulator(self.read_register(1).wrapping_add(value));
 
         return true;
     }
@@ -92,7 +90,7 @@ impl BasicOperations for NeanderCPU {
         let position = self.next_instruction();
         let value = self.mem.direct_read(position);
 
-        self.set_accumulator(self.accumulator | value);
+        self.set_accumulator(self.read_register(1) | value);
         
         return true;
     }
@@ -102,14 +100,14 @@ impl BasicOperations for NeanderCPU {
         let position = self.next_instruction();
         let value = self.mem.direct_read(position);
 
-        self.set_accumulator(self.accumulator & value);
+        self.set_accumulator(self.read_register(1) & value);
         
         return true;
     }
 
     /// Bitwise NOT operation on the accumulator
     fn not(&mut self) -> bool {
-        self.set_accumulator(!self.accumulator);
+        self.set_accumulator(!self.read_register(1));
         
         return true;
     }
@@ -160,7 +158,7 @@ mod neander_tests{
     fn create_cpu() {
         let cpu = NeanderCPU{..Default::default()};
         assert_eq!(cpu.read_pc(), 0);
-        assert_eq!(cpu.accumulator, 0);
+        assert_eq!(cpu.read_register(1), 0);
         assert_eq!(cpu.zero_flag, false);
         assert_eq!(cpu.negative_flag, false);
         assert_eq!(cpu.mem.dump(), [0;256].to_vec());   

@@ -29,7 +29,7 @@ impl NeanderJS {
     
     pub fn get_state(&self) -> JsValue {
         let cpu = ExportedNeander{
-            acc: self.cpu.accumulator,
+            acc: self.cpu.read_register(1),
             pc: self.cpu.read_pc(),
             mem: self.cpu.mem.dump(),
             zf: self.cpu.zero_flag,
@@ -55,7 +55,7 @@ impl NeanderJS {
     }
 
     pub fn set_acc(&mut self, new_acc: u8) {
-        self.cpu.accumulator = new_acc;
+        self.cpu.write_register(1, new_acc);
     }
 
     pub fn set_mem(&mut self, pos: u8, value: u8){
