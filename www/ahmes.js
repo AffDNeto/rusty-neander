@@ -25,23 +25,23 @@ export class AhmesRegisterControler extends RegisterController {
 export class AhmesView extends NeanderViewModel {
     constructor(node, model){
         super(node, model);
-        this.setupExtraFlags()
     }
 
     setupRegistersView(){
+        console.log('ahhhhh')
         this.reg = this.node.querySelector("#registerContainer");
         this.reg = new AhmesRegisterControler(this.reg);
         this.reg.init();
         this.setupRegOnchangeCallbacks();
     }
     updateView(){
-        var state = this.model.get_state();
+        var state = this.cpu.get_state();
 
         this.memMap.updateTable(state.mem);
 
         this.reg.registerSet(
             state.acc,
-            state,pc,
+            state.pc,
             state.nf,
             state.zf,
             state.vf,

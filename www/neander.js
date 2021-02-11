@@ -93,8 +93,6 @@ export class RegisterController {
 
 export class NeanderViewModel {
   constructor(node, model) {
-    console.log('neander called');
-    console.log(node, model);
     this.node = node;
     this.cpu = model;
 
@@ -147,8 +145,6 @@ export class NeanderViewModel {
   }
 
   updateSelectedRow(rowIndex) {
-    console.log(rowIndex)
-    console.log(this.cpu.get_state().mem[rowIndex-1])
     this.selectedMemPos = rowIndex-1;
     this.posLabel.textContent = this.selectedMemPos;
     this.memInput.value = this.cpu.get_state().mem[this.selectedMemPos];
