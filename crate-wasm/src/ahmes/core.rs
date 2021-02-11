@@ -45,7 +45,57 @@ impl ExecuteCycle<u8> for AhmesEmulator {
     }
 
     fn run_instruction(&mut self, op_code: u8) -> bool {
-        todo!()
+        let op = (op_code & 0b1111_0000) >> 4;
+        let jmp_op = ( op_code & 0b0000_1100) >> 2;
+        let shift_op = op_code & 0b0000_0011;
+        self.instruction_counter += 1;
+
+        match op {
+            0x0 => return self.no_operation(),
+            0x1 => return self.store(),
+            0x2 => return self.load(),
+            0x3 => return self.add(),
+            0x4 => return self.or(),
+            0x5 => return self.and(),
+            0x6 => return self.not(),
+            0x8 => return self.jump(),
+            0x9 => {
+                match jmp_op {
+                    0x0 => return self.jump_negative(),
+                    0x1 => return self.jump_non_negative(),
+                    0x2 => return self.jump_overflow(),
+                    0x3 => return self.jump_non_overflow(),
+                    _ => false
+                }
+            },
+            0xA => {
+                match jmp_op {
+                    0x0 => return self.jump_zero(),
+                    0x1 => return self.jump_non_zero(),
+                    _ => false
+                }
+            },
+            0xB => {
+                match jmp_op {                    
+                    0x0 => return self.jump_carry(),
+                    0x1 => return self.jump_non_carry(),
+                    0x2 => return self.jump_borrow(),
+                    0x3 => return self.jump_non_borrow(),
+                    _ => false
+                }
+            },
+            0xE => {
+                match shift_op {                    
+                    0x0 => return self.shift_right(),
+                    0x1 => return self.shift_left(),
+                    0x2 => return self.rotate_right(),
+                    0x3 => return self.rotate_left(),
+                    _ => false
+                }
+            },
+            0xF => return self.halt(),
+            _ => return self.halt()
+        }
     }
 }
 
