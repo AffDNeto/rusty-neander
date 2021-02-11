@@ -1,5 +1,7 @@
 'use strict';
 
+require('./neander.html');
+
 export class MemTableControler {
   constructor(table, size) {
     this.memory_table = table;
@@ -64,12 +66,12 @@ export class RegisterController {
   constructor(where){
     this.div = where
 
-    this.accInput = document.querySelector(`#${this.div.id} #accInput`);
-    this.pcInput = document.querySelector(`#${this.div.id} #pcInput`);
-    this.nFlag = document.querySelector(`#${this.div.id} #negativeFlag`);
-    this.zFlag = document.querySelector(`#${this.div.id} #zeroFlag`);
-    this.access = document.querySelector(`#${this.div.id} #memAccess`);
-    this.instructions = document.querySelector(`#${this.div.id} #instCount`);
+    this.accInput = this.div.querySelector(`#accInput`);
+    this.pcInput = this.div.querySelector(`#pcInput`);
+    this.nFlag = this.div.querySelector(`#negativeFlag`);
+    this.zFlag = this.div.querySelector(`#zeroFlag`);
+    this.access = this.div.querySelector(`#memAccess`);
+    this.instructions = this.div.querySelector(`#instCount`);
   }
 
   registerSet(acc, pc, nFlag, zFlag, memAccess, instAccess){
@@ -91,6 +93,8 @@ export class RegisterController {
 
 export class NeanderViewModel {
   constructor(node, model) {
+    console.log('neander called');
+    console.log(node, model);
     this.node = node;
     this.cpu = model;
 
@@ -167,7 +171,10 @@ export class NeanderViewModel {
     this.reg = document.querySelector(`#${this.node.id} #registerContainer`);
     this.reg = new RegisterController(this.reg);
     this.reg.init();
-
+    this.setupRegOnchangeCallbacks();
+  }
+  
+  setupRegOnchangeCallbacks(){
     //sets up the callbacks for updating the registers
     this.reg.pcInput.onchange = (e) => { 
       var nv = Number(e.target.value);
@@ -186,6 +193,7 @@ export class NeanderViewModel {
       return true
     };
   }
+
   updateExecuteSteps(event){
     var newValue = Number(event.target.value);
     if ( isNaN(newValue) || newValue < 1 ) {
