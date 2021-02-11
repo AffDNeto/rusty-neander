@@ -4,14 +4,16 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlWebpackPartialsPlugin = require('html-webpack-partials-plugin');
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     entry: path.resolve(__dirname, 'index.js'),
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'index.js',
+        filename: '[name].bundle.js',
     },
     plugins: [
+        new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './index.html'
         }),
