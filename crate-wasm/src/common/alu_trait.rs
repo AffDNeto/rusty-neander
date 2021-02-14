@@ -16,14 +16,14 @@ pub trait SimpleAlu {
     /// since they can be computed independant of the operation
     fn compute_flags(&mut self, value: u8){
         self.set_zero(value == 0);
-        /// If the number in binary starts with zero it is a negative number
+        // If the number in binary starts with zero it is a negative number
         self.set_negative(value.leading_ones() > 0);
     }
 
     fn add(&mut self, a: u8, b: u8) -> u8{
-        /// on unsigned operations an overflow means a carry in signed operations
-        let (result, carry) = a.overflowing_add(value);
-        let (_, overflow) = (a as i8).overflowing_add(value as i8);
+        // on unsigned operations an overflow means a carry in signed operations
+        let (result, carry) = a.overflowing_add(b);
+        let (_, overflow) = (a as i8).overflowing_add(b as i8);
 
         self.set_carry(carry);
         self.set_overflow(overflow);
@@ -53,7 +53,7 @@ pub trait SimpleAlu {
 }
 
 pub trait ExtendedALU: SimpleAlu {
-    fn sub(&self, a:u8, b: u8) -> u8 {
+    fn sub(&mut self, a:u8, b: u8) -> u8 {
         let (result, borrow) = a.overflowing_sub(b);
         let (_, overflow) = (a as i8).overflowing_sub(b as i8);
 

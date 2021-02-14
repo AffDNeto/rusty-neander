@@ -1,3 +1,6 @@
+pub mod alu_trait;
+pub mod memory_trait;
+pub mod register_trait;
 use std::convert::TryInto;
 
 pub trait BasicALU {

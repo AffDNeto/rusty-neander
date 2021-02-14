@@ -1,4 +1,4 @@
-
+use super::{alu_trait::SimpleAlu, memory_trait::Memory};
 
 pub trait RegisterBank {
     fn get_pc(&self) -> u8; // Program Counter
@@ -32,7 +32,7 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     
     /// Runs the next instruction and returns a value if the machines, 
     /// stoped running in case it run a halt instruction
-    fn step_code() -> bool {
+    fn step_code(&mut self) -> bool {
         self.search_instruction();
         return self.decode_and_execute()
     }
@@ -81,22 +81,16 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     }
 
     /// returns the index of the register signalized on RI 
-    fn instruction_register(&self) -> u8 { 
-        /// By default will return the first register
+    fn ri_reg(&self) -> u8 { 
+        // By default will return the first register
         return 0
-    }
-
-    /// Loads from memory to the register
-    fn lda(&mut self) {
-        self.pre_ula_operation();
-        self.set_register(self.instruction_register(), self.get_rdm())
     }
 
     /// Stores from register to memmory
     fn str(&mut self) {
         self.read_from_pc();
         self.set_rem(self.get_rdm());
-        self.set_rdm(self.get_register(self.instruction_register()));
+        self.set_rdm(self.get_register(self.ri_reg()));
         self.write_with_mode();
     }
 
@@ -106,4 +100,5 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
         self.set_rem(self.get_rdm());
         self.read_with_mode();
     }
+    
 }
