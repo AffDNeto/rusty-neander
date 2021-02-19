@@ -1,3 +1,6 @@
+use std::{fs::{self, File}, io::Read};
+use std::path::Path;
+
 use crate::common::{alu_trait::SimpleAlu, memory_trait::Memory, register_trait::{RegisterBank, Runner}};
 
 pub mod core;
@@ -16,6 +19,22 @@ pub struct NeanderExp{
     pub negative_flag: bool
 }
 
+impl Default for NeanderExp {
+    fn default() -> Self {
+        NeanderExp {
+            pc: 0,
+            ri: 0,
+            rem: 0,
+            rdm: 0,
+            acc: 0,
+            memory: [0; 256],
+            memory_access: 0,
+            instruction_counter: 0,
+            zero_flag: false,
+            negative_flag: false
+        }
+    }
+}
 impl SimpleAlu for NeanderExp {
     fn set_zero(&mut self, value:bool) {
         self.zero_flag = value;
@@ -142,14 +161,42 @@ impl NeanderExp {
         let operation = (self.get_ri() & 0b1111_0000) >> 4;
         let a = self.get_register(self.ri_reg());
         let b = self.get_rdm();
-        let result: u8; 
+        let mut result: u8 = 0; 
         match operation {
-            0x2 => self.compute_flags(a), //LDA
+            0x2 => self.compute_flags(b), //LDA
             0x3 => result = self.add(a, b), //ADD
             0x4 => result = self.or(a, b), //OR
             0x5 => result = self.and(a, b), //AND
+            _ => result = 0
         }
 
         self.set_register(self.ri_reg(), result);
+    }
+
+    fn op_not(&mut self) {
+        let a = self.get_register(self.ri_reg());
+        let result = self.not(a);
+        self.set_register(self.ri_reg(), result);
+    }
+}
+
+#[cfg(test)]
+mod RealTests {
+    use super::*;
+
+    fn mem_to_array(filename: &String) -> Vec<u8> {
+        let mut f = File::open(&filename).expect("No file found");
+        let metadata = fs::metadata(&filename).expect("Unable to read metadata");
+        let mut buffer = vec![0; metadata.len() as usize];
+
+        f.read(&mut buffer).expect("buffer overflow");
+
+        buffer
+    }
+
+    #[test]
+    fn read(){
+        println!("{}", std::env::current_dir());
+        let mem = mem_to_array(&String::from("../../../tests/test.mem_to_array"));
     }
 }

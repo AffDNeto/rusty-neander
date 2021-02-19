@@ -1,10 +1,14 @@
+use std::convert::TryInto;
+
 use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
-use crate::{common::{BasicALU, ExecuteCycle, Memory}, neander::core::NeanderCPU};
+use crate::{common::{memory_trait::Memory, register_trait::{RegisterBank, Runner}}};
+
+use super::NeanderExp;
 
 #[wasm_bindgen]
 pub struct NeanderJS {
-    cpu: NeanderCPU
+    cpu: NeanderExp
 }
 
 #[derive(Serialize, Deserialize)]
@@ -23,18 +27,18 @@ impl NeanderJS {
     #[wasm_bindgen(constructor)]
     pub fn new() -> NeanderJS {
         NeanderJS{
-            cpu: NeanderCPU{..Default::default()}
+            cpu: NeanderExp{..Default::default()}
         }
     }
     
     pub fn get_state(&self) -> JsValue {
         let cpu = ExportedNeander{
-            acc: self.cpu.read_register(1),
-            pc: self.cpu.read_pc(),
-            mem: self.cpu.mem.dump(),
+            acc: self.cpu.get_register(0),
+            pc: self.cpu.get_pc(),
+            mem: self.cpu.memory.to_vec(),
             zf: self.cpu.zero_flag,
             nf: self.cpu.negative_flag,
-            mem_access_counter: self.cpu.mem.access_counter,
+            mem_access_counter: self.cpu.memory_access,
             instruction_counter: self.cpu.instruction_counter
         };
         JsValue::from_serde(&cpu).unwrap()
@@ -45,7 +49,7 @@ impl NeanderJS {
         let mut cycle_count:usize = 0;
 
         while result && cycle_count < cycles {
-            result = self.cpu.execute_cycle();
+            result = self.cpu.step_code();
             cycle_count += 1;
         }
     }
@@ -55,15 +59,20 @@ impl NeanderJS {
     }
 
     pub fn set_acc(&mut self, new_acc: u8) {
-        self.cpu.write_register(1, new_acc);
+        self.cpu.set_register(0, new_acc);
     }
 
-    pub fn set_mem(&mut self, pos: u8, value: u8){
-        self.cpu.mem._write(pos, value);
+    pub fn set_mem(&mut self, pos: usize, value: u8){
+        self.cpu._write(pos, value);
     }
 
     pub fn load_mem(&mut self, array:JsValue) {
         let elements: Vec<u8> = array.into_serde().unwrap();
-        self.cpu.mem.load(elements)
+        self.cpu.memory = elements.try_into()
+            .unwrap_or_else(
+                |v: Vec<u8>| 
+                panic!("Expecteted len 256 but came {}", v.len()
+                )
+            );
     }
 }

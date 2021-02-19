@@ -53,7 +53,7 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
 
     /// Reads from memory based on the addressing mode set in RI
     fn read_with_mode(&mut self) {
-        /// the simplest implementation is direct read
+        // the simplest implementation is direct read
         self.direct_read();
     }
 
