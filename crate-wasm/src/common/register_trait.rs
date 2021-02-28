@@ -62,19 +62,11 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
         self.direct_write();
     }
 
-    ///Some simple instructions that are present on all simulators
-    fn jmp(&mut self) {
-        self.set_rem(self.get_pc());
-        self.read_with_mode();
-        self.set_pc(self.get_rdm());
-    } 
-
     //Jumps only if condition is true
     fn _jmp_if(&mut self, condition: bool) {
         // do the same behaviour of the machine, 
         //searching the destiny address even if no jump occurs
-        self.set_rem(self.get_pc());
-        self.read_with_mode();
+        self.read_from_pc();
         if condition {
             self.set_pc(self.get_rdm());
         }
@@ -89,8 +81,10 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     /// Stores from register to memmory
     fn str(&mut self) {
         self.read_from_pc();
-        self.set_rem(self.get_rdm());
-        self.set_rdm(self.get_register(self.ri_reg()));
+        let pos = self.get_rdm();
+        let value = self.get_register(self.ri_reg());
+        self.set_rem(pos);
+        self.set_rdm(value);
         self.write_with_mode();
     }
 

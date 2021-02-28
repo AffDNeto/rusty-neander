@@ -12,6 +12,6 @@ extern "C" {
 }
 
 #[wasm_bindgen]
-pub fn greet(name: &str) {
+pub fn greet() {
     log("Canary hello!")
 }

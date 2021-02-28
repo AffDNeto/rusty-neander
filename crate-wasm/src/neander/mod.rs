@@ -6,6 +6,7 @@ use crate::common::{alu_trait::SimpleAlu, memory_trait::Memory, register_trait::
 pub mod core;
 pub mod bindgen;
 
+#[derive(Debug)]
 pub struct NeanderExp{
     pub pc: u8,
     pub ri: u8,
@@ -141,12 +142,15 @@ impl Runner for NeanderExp {
             0x1 => self.str(),//store
             0x2..=0x5 => self.ula_operation(),//ula operation
             0x6 => self.op_not(),// NOT
-            0x8 => self.jmp(),
+            0x8 => self._jmp_if(true),
             0x9 => self._jmp_if(self.get_negative()), //JN
             0xA => self._jmp_if(self.get_zero()), // JZ
             0x0 => return true,// NOP
             0xF => return false,// HLT
-            _ => return false
+            _ => {
+                println!("Unexpected instruction found {}", self.get_ri());
+                return false
+            }
 
         }
         // If the code reaches here some operation was done
@@ -161,9 +165,12 @@ impl NeanderExp {
         let operation = (self.get_ri() & 0b1111_0000) >> 4;
         let a = self.get_register(self.ri_reg());
         let b = self.get_rdm();
-        let mut result: u8 = 0; 
+        let result: u8; 
         match operation {
-            0x2 => self.compute_flags(b), //LDA
+            0x2 => {
+                result = b;
+                self.compute_flags(b); //LDA
+            },
             0x3 => result = self.add(a, b), //ADD
             0x4 => result = self.or(a, b), //OR
             0x5 => result = self.and(a, b), //AND
@@ -181,10 +188,15 @@ impl NeanderExp {
 }
 
 #[cfg(test)]
-mod RealTests {
-    use super::*;
+mod real_test {
+    use differ::{Differ, Tag};
+    use std::convert::TryInto;
 
-    fn mem_to_array(filename: &String) -> Vec<u8> {
+    use super::*;
+    use rstest::*;
+
+    /// Reads a bynary file to an u8 vector
+    fn mem_to_array<T: AsRef<Path>>(filename: T) -> Vec<u8> {
         let mut f = File::open(&filename).expect("No file found");
         let metadata = fs::metadata(&filename).expect("Unable to read metadata");
         let mut buffer = vec![0; metadata.len() as usize];
@@ -194,9 +206,74 @@ mod RealTests {
         buffer
     }
 
-    #[test]
-    fn read(){
-        println!("{}", std::env::current_dir());
-        let mem = mem_to_array(&String::from("../../../tests/test.mem_to_array"));
+    fn array_to_256mem(array: Vec<u8>) -> Vec<u8> {
+        array.into_iter()
+            .skip(4) // First 4 bytes is the file header
+            .enumerate()
+            .filter(|&(i, _) | i%2 == 0) // .mem format has 0 on every odd position
+            .map(|(_, v)| v) // removes the index added by the enumerate
+            .collect()
+    }
+
+    fn compare_mem(a: &[u8], b: &[u8]){
+        let diff =  Differ::new(&a, &b);
+        for span in diff.spans() {
+            match span.tag {
+                Tag::Replace => {
+                    println!("Difference found from {} to {}", span.b_start, span.b_end);
+                    println!("Want:{:?}", &b[span.b_start..span.b_end]);
+                    println!("Got :{:?}", &a[span.b_start..span.b_end]);
+                },
+                _ => ()
+            }
+        }
+    }
+
+    fn read<T: AsRef<Path>>(file_path: T) -> [u8; 256] {
+        let crate_path = env!("CARGO_MANIFEST_DIR");
+        let test_path = Path::new(crate_path)
+            .join("tests")
+            .join("neander")
+            .join(file_path);
+        println!("Reading file:");
+        println!("{:?}", test_path);
+        let mem = array_to_256mem( mem_to_array(&test_path));
+
+        mem.try_into()
+        .unwrap_or_else(
+            |v: Vec<u8>| 
+            panic!("Expecteted len 256 but came {}", v.len()
+            )
+        )
+    }
+
+    #[rstest(filename,
+        case::simples("simples.mem"),
+        case::add("add_test.mem"),
+        case::and("and_test.mem"),
+        case::jmp("jmp_test.mem"),
+        case::lda("lda_test.mem"),
+        case::not("not_test.mem"),
+        case::or("or_test.mem"),
+        case::sta("sta_test.mem")
+    )]
+    fn basic_neander_test(filename: impl AsRef<str>){
+        let mut neander = NeanderExp{..Default::default()};
+        let mut result_file = "result.".to_owned();
+        result_file.push_str(filename.as_ref());
+        let start = read(filename.as_ref());
+        let result = read(&result_file);
+        neander.memory = start;
+
+        for _ in 1..100 {
+            if !neander.step_code() { break; }
+            //println!("{:?}", neander);
+        }
+
+        compare_mem(&neander.memory, &result);
+        println!("What changed");
+        compare_mem(&neander.memory, &start);
+        
+        assert!(neander.memory==result);
     }
 }

@@ -191,3 +191,95 @@ mod neander_tests{
         assert_eq!(cpu.mem.access_counter, 1);
     }
 }
+
+#[cfg(test)]
+mod real_test {
+    use std::{fs::{self, File}, io::Read};
+    use std::path::Path;
+    use differ::{Differ, Tag};
+    use std::convert::TryInto;
+
+    use super::*;
+    use rstest::*;
+
+    /// Reads a bynary file to an u8 vector
+    fn mem_to_array<T: AsRef<Path>>(filename: T) -> Vec<u8> {
+        let mut f = File::open(&filename).expect("No file found");
+        let metadata = fs::metadata(&filename).expect("Unable to read metadata");
+        let mut buffer = vec![0; metadata.len() as usize];
+
+        f.read(&mut buffer).expect("buffer overflow");
+
+        buffer
+    }
+
+    fn array_to_256mem(array: Vec<u8>) -> Vec<u8> {
+        array.into_iter()
+            .skip(4) // First 4 bytes is the file header
+            .enumerate()
+            .filter(|&(i, _) | i%2 == 0) // .mem format has 0 on every odd position
+            .map(|(_, v)| v) // removes the index added by the enumerate
+            .collect()
+    }
+
+    #[rstest(filename,
+        case::add("add_test.mem"),
+        case::and("and_test.mem"),
+        case::jmp("jmp_test.mem"),
+        case::lda("lda_test.mem"),
+        case::not("not_test.mem"),
+        case::or("or_test.mem"),
+        case::sta("sta_test.mem")
+    )]
+    fn core_test(filename: impl AsRef<str>){
+        let mut neander = NeanderCPU{..Default::default()};
+        let mut result_file = "result.".to_owned();
+        result_file.push_str(filename.as_ref());
+        let start = read(filename.as_ref());
+        let result = read(&result_file);
+        neander.mem.mem = start;
+        //println!("Before {:?}", neander.mem.mem);
+
+        for _ in 1..100 {
+            if !neander.execute_cycle() { break; }
+        }
+        //println!("After {:?}", neander.mem.mem);
+        
+        compare_mem(&neander.mem.mem, &result);
+        assert_eq!(neander.mem.mem, result, "Error comparing memory");
+    }
+
+    fn compare_mem(a: &[u8], b: &[u8]){
+        let diff =  Differ::new(&a, &b);
+        for span in diff.spans() {
+            match span.tag {
+                Tag::Replace => {
+                    println!("Difference found from {} to {}", span.b_start, span.b_end);
+                    println!("Want:{:?}", &b[span.b_start..span.b_end]);
+                    println!("Got :{:?}", &a[span.b_start..span.b_end]);
+                },
+                _ => ()
+            }
+        }
+    }
+
+    fn read<T: AsRef<Path>>(file_path: T) -> [u8; 256] {
+        let crate_path = env!("CARGO_MANIFEST_DIR");
+        let test_path = Path::new(crate_path)
+            .join("tests")
+            .join("neander")
+            .join(file_path);
+        println!("Reading file:");
+        println!("{:?}", test_path);
+        let mem = array_to_256mem( mem_to_array(&test_path));
+
+        mem.try_into()
+        .unwrap_or_else(
+            |v: Vec<u8>| 
+            panic!("Expecteted len 256 but came {}", v.len()
+            )
+        )
+    }
+
+
+}
