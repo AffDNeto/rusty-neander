@@ -50,11 +50,11 @@ JMP ERR
 ; + com + = +
 P5:
 LDA MAXN; AC = 127
-AND ONE	; AC = 127 & 1 = 127
+AND ONE	; AC = 127 & 1 = 1
 STA T5
 JZ ERR
-JN END
-JMP ERR
+JN ERR
+JMP END
 
 ERR: 
 LDA ONE
