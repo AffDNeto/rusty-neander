@@ -1,0 +1,67 @@
+; Testa adicao ahmes
+; zera a flag B antes dos testes
+LDA ZERO
+SUB ZERO
+; Comentarios com as flags esperadas seguem a seguinte ordem (N,Z,V,C,B)
+
+; 0 + 1 = 1 (0,0,0,0,0)
+LDA ZERO
+ADD ONE
+STA T0
+JZ ERR 	
+JN ERR  
+JV ERR  
+JC ERR 
+JB ERR 
+
+;127+1 = 128(-128) (1,0,1,0,0) overflow
+LDA MAXN; AC = 127
+ADD ONE ; AC = 128, V=1,C=0
+STA T1
+JZ ERR
+JP ERR
+JNV ERR
+JC ERR
+JB ERR
+
+; 128+255=127 (0,0,1,1,0) overflow+carry
+LDA MINN; AC = 128
+ADD MAX ; AC = 128+255 = 127 V=1,C=1
+STA T2
+JN ERR
+JZ ERR
+JNV ERR
+JNC ERR
+JB ERR
+
+; 255+1=0 (0,1,0,1,0) carry
+LDA MAX 
+ADD ONE ; 255+1=0 C,Z=0
+STA T3
+JN ERR
+JNZ ERR
+JNC ERR
+JV ERR
+JB ERR
+
+JMP END
+ERR: 
+LDA ONE
+STA E
+END:
+HLT
+
+ORG 128
+T0: 1
+T1: 1
+T2: 1
+T3: 1
+ZERO: 0	
+ONE: 1
+TWO: 2
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maximo em complemento de 2
+MINN:128; Valor minimo negativo em complemento de 2
+M2: 254 ; -2
+M127:129; -127	
+E: 0    ; Variavel para indicar que teve um erro no teste

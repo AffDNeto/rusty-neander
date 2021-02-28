@@ -1,0 +1,75 @@
+; Testa jumps com a flag V (JV, JNV)
+; Nenhuma instrucção testada deve ser capa de modificar os sinais de flag
+LDA ZERO
+ADD ZERO
+SUB ZERO
+; Comentarios com as flags esperadas seguem a seguinte ordem (N,Z,V,C,B)
+
+; JV com (0,0,1,0,0)
+LDA MINN
+ADD MAXN; 128+127 = 1, v=1 c=0
+JV P1
+JMP ERR
+P1:
+JN ERR
+JZ ERR
+JC ERR
+JB ERR
+
+; JV com (0,0,0,0,0)
+LDA ZERO
+ADD ONE ; 0 + 1 = 1 V,C=0
+JV ERR
+
+; JV com (0,1,0,1,1)
+LDA ZERO
+SUB ONE ; 0 - 1 = 255 B,N=1 V=0
+ADD ONE ; 255 + 1 = 0, V=0, Z,C=1
+JV ERR
+
+; JV com (1,0,0,1,1)
+LDA MAX ; 255(-1)
+JV ERR
+
+; JNV com (0,0,0,0,0)
+LDA ZERO
+SUB ZERO
+ADD ONE
+JNV P2
+JMP ERR
+P2:
+JN ERR
+JZ ERR
+JC ERR
+JB ERR
+
+; JNV com (0,0,1,0,0)
+LDA MINN
+ADD ZERO; 128+0 = 128 C,V=0
+SUB ONE ; 128 - 1 = 127, V=1 B,Z=0
+JNV ERR
+
+; JNV com (0,1,1,1,1)
+LDA ZERO
+SUB MINN; 0-128=128 V,B=1
+ADD MINN; 128+128=0 V,C,Z=1
+JNV ERR
+
+; JNV com (1,0,1,1,1)
+LDA MINN
+ADD MINN; 128+128=0 V,C=1
+SUB MINN; 0-128=128 V,B=1
+JNV ERR
+
+END: 
+LDA ZERO
+STA E
+ERR:
+HLT
+
+ORG 128
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maxime em complemento de 2
+E: 1    ; Variavel para indicar que teve um erro no teste (1=ERROR)

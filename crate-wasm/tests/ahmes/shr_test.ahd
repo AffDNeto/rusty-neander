@@ -1,0 +1,110 @@
+; Teste shift
+; no test can change the V,C, and B flags so they are set to 0 before testing
+LDA ZERO
+ADD ZERO
+SUB ZERO
+
+; shift right
+; 128 >> = 64 com C=0
+LDA MINN
+SHR     ; AC = 64 (0,0,0,0,0)
+STA T2
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 64 >> = 32 com C=0
+SHR     ; AC = 32 (0,0,0,0,0)
+STA T3
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 32 >> = 16 com C=0
+SHR     ; AC = 16 (0,0,0,0,0)
+STA T4
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 16 >> = 8 com C=0
+SHR     ; AC = 8 (0,0,0,0,0)
+STA T5
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 8 >> = 4 com C=0
+SHR     ; AC = 4 (0,0,0,0,0)
+STA T6
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 4 >> = 2 com C=0
+SHR     ; AC = 2 (0,0,0,0,0)
+STA T7
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 2 >> = 1 com C=0
+SHR     ; AC = 1 (0,0,0,0,0)
+STA T8
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 1>> = 0 com C=0
+SHR     ; AC = 0 (0,1,0,1,0)
+STA T0
+JNC ERR
+JN ERR
+JNZ ERR
+JB ERR
+JV ERR
+
+; 0>> = 0 com C=1
+SHR     ; AC = 0 (0,1,0,0,0)
+STA T1
+JN ERR
+JNZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+JMP END
+END:
+LDA ZERO
+STA E
+ERR: 
+HLT
+
+ORG 128
+T0: 0
+T1: 0
+T2: 0
+T3: 0
+T4: 0
+T5: 0
+T6: 0
+T7: 0
+T8: 0
+ZERO: 0	
+ONE: 1
+MINN: 128
+E: 1    ; Variavel para indicar que teve um erro no teste

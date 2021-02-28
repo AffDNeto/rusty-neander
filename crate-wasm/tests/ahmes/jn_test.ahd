@@ -1,0 +1,64 @@
+; Testa jumps com flag N (JN,JP)
+; Nenhuma instrucção testada deve ser capa de modificar os sinais de flag
+LDA ZERO
+ADD ZERO
+SUB ZERO
+; Comentarios com as flags esperadas seguem a seguinte ordem (N,Z,V,C,B)
+
+; JN com (1,0,0,0,0)
+LDA MAX
+JN P1
+JMP ERR
+P1:     ; Testa se nenhum sinal foi modificado
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; JN com (0,0,0,0,0)
+LDA ONE
+JN ERR
+
+; JN com (0,1,1,1,1)
+LDA MAX
+SUB ONE  ; 0-1 = 255, B=1
+ADD ONE  ; 255 + 1 = 0, V,C,Z=1 e N=0
+JN ERR
+; reset c,b,v=0
+LDA ZERO
+ADD ZERO
+SUB ZERO
+
+; JP com (0,0,0,0,0)
+LDA ONE
+JP P2
+JMP ERR
+P2:     ; Testa se nenhum sinal foi modificado
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; JP com (1,0,0,0,0)
+LDA MAX
+JP ERR
+
+; JP com (1,0,1,1,1)
+LDA MAX
+ADD ONE ; 255+1 = 0, C=1
+SUB MINN; 0 - 128 = 128 B,V,N=1
+JP ERR
+
+END: 
+LDA ZERO
+STA E
+ERR:
+HLT
+
+ORG 128
+ZERO: 0	
+ONE: 1
+TWO: 2
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maxime em complemento de 2
+E: 1    ; Variavel para indicar que teve um erro no teste (1=ERROR)

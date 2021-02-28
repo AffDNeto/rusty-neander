@@ -1,0 +1,73 @@
+; Testa jumps com flag B (JB, JNB)
+; Nenhuma instrucção testada deve ser capa de modificar os sinais de flag
+LDA ZERO
+ADD ZERO
+SUB ZERO
+; Comentarios com as flags esperadas seguem a seguinte ordem (N,Z,V,C,B)
+
+; JB com (0,0,0,0,1)
+LDA ZERO
+SUB ONE ;0-1=255 B=1
+LDA ONE ;N,Z=0
+JB P1
+JMP ERR
+P1:
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+
+; JB com (0,0,0,0,0)
+LDA ZERO
+ADD ZERO
+SUB ZERO
+LDA ONE
+JB ERR
+
+; JB com (1,0,0,0,0)
+LDA MAX
+JB ERR
+
+; JB com (0,1,1,1,0)
+LDA MINN 
+ADD MINN; 128 + 128 = 0, V,C,Z=1
+JB ERR
+; reset c,b,v=0
+LDA ZERO
+ADD ZERO
+SUB ZERO
+
+; JNB com (0,0,0,0,0)
+P2:
+LDA ONE
+JNB P3
+JMP ERR
+P3:
+JN ERR
+JZ ERR
+JV ERR
+JB ERR
+
+; JNB com (1,0,0,0,1)
+LDA ZERO
+SUB ONE ; 0-1=255 B,N=1
+JNB ERR
+
+; JNB com (0,1,1,1,1)
+LDA MINN
+ADD MINN ; 128 + 128 = 0 C,V,Z=1
+JNB ERR
+
+END: 
+LDA ZERO
+STA E
+ERR:
+HLT
+
+ORG 128
+ZERO: 0	
+ONE: 1
+TWO: 2
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maxime em complemento de 2
+E: 1    ; Variavel para indicar que teve um erro no teste (1=ERROR)

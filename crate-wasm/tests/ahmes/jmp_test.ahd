@@ -1,0 +1,56 @@
+; Testa jump
+; Nenhuma instrucção testada deve ser capa de modificar os sinais de flag
+LDA ZERO
+ADD ZERO
+SUB ZERO
+; Comentarios com as flags esperadas seguem a seguinte ordem (N,Z,V,C,B)
+
+; jmp incondicional com (0,0,0,0,0)
+LDA ONE
+JMP P1
+HLT
+
+; jmp incondicional com (0,1,0,0,0)
+P1:
+LDA ZERO
+JMP P2
+HLT
+
+; jmp incondicional com (1,0,0,0,0)
+P2:
+LDA MAX ; carrega ac com 255(-1)
+JMP P3
+HLT
+
+; jmp incondicional com (0,0,0,1,0)
+P2:
+LDA MAX ; carrega ac com 255(-1)
+ADD TWO ; 255+2 = 1 C=1
+JMP P3
+HLT
+
+; jmp incondicional com (0,0,1,0,0)
+P3:
+LDA MIXN; carrega ac com 128
+SUB ONE ; 128-1 = 127 V=1
+JMP P4
+HLT
+
+; jmp incondicional com (0,0,0,0,1)
+P4:
+LDA ZERO; carrega ac com 0
+SUB ONE ; 0-1=255 N,B=1
+LTA ONE ; N=0
+JMP END
+HLT
+
+END: 
+LDA ZERO
+STA E
+HLT
+
+ORG 128
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+E: 1    ; Variavel para indicar que teve um erro no teste (1 = ERRO)

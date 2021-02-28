@@ -1,0 +1,31 @@
+; Testa guardar na memoria
+; no test can change the V,C, and B flags so they are set to 0 before testing
+LDA ZERO
+ADD ZERO
+SUB ZERO
+
+LDA MAX ; AC = 255(-1)
+STA T0
+JZ ERR 
+JC ERR
+JB ERR
+JV ERR
+JP ERR
+
+; verifica se é o mesmo valor
+LDA T0  ; AC = 255(-1)
+SUB MAX
+JNZ ERR
+JMP END
+
+END:
+LDA ONE
+STA E
+ERR: 
+HLT
+
+ORG 128
+T0: 1
+ONE: 1
+MAX: 255; Valor maximo em byte
+E: 1    ; Variavel para indicar que teve um erro no teste

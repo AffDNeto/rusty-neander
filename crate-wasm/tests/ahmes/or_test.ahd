@@ -1,0 +1,80 @@
+; Teste or
+; no test can change the V,C, and B flags so they are set to 0 before testing
+LDA ZERO
+ADD ZERO
+SUB ZERO
+
+; A or A = A
+LDA MAXN; AC = 127
+OR MAXN ; AC = 127 & 127 = 127
+STA T0
+JN ERR
+JZ ERR
+JC ERR
+JB ERR
+JV ERR
+SUB MAXN; AC = -127 + 127 = 0
+JZ P1
+JMP ERR
+
+; !A or A = 255
+P1:
+LDA MAXN; AC = 127
+NOT
+OR MAXN ; AC = !127 | 127 = FF
+STA T1
+JZ ERR
+JC ERR
+JB ERR
+JV ERR
+JP ERR
+SUB MAX ; AC = 255 - 255 = 0
+JZ P2	
+JMP ERR
+
+; A or 0 = A
+P2:
+LDA MAXN; AC = 127
+OR ZERO; AC = AC | 0 = 127
+STA T2
+JN ERR
+JC ERR
+JB ERR
+JV ERR
+JNZ ERR	
+JMP ERR
+SUB MAXN; AC = -127 + 127 = 0
+JZ P3
+JMP ERR
+
+; A or FF = FF
+P3:
+LDA MAXN; AC = 127
+OR MAX  ; AC = 127 & 255 = 255
+STA T3
+JZ ERR
+JC ERR
+JB ERR
+JV ERR
+JP ERR
+SUB MAX ; AC = 255-255
+JZ END
+JMP ERR
+
+END:
+LDA ZERO
+STA E
+ERR: 
+HLT
+
+ORG 128
+T0: 1
+T1: 1
+T2: 1
+T3: 1
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maximo em complemento de 2
+MINN:128; Valor minimo negativo em complemento de 2	
+E: 1    ; Variavel para indicar que teve um erro no teste

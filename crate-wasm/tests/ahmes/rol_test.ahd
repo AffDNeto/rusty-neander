@@ -1,0 +1,110 @@
+; Teste rotate
+; no test can change the V,C, and B flags so they are set to 0 before testing
+LDA ZERO
+ADD ZERO
+SUB ZERO
+
+; rotate left
+; 1 << = 2 com C=0
+LDA ONE
+ROL     ; AC = 2 (0,0,0,0,0)
+STA T0
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 2 << = 4 com C=0
+ROL     ; AC = 4 (0,0,0,0,0)
+STA T1
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 4 << = 8 com C=0
+ROL     ; AC = 8 (0,0,0,0,0)
+STA T2
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 32 << = 16 com C=0
+ROL     ; AC = 16 (0,0,0,0,0)
+STA T3
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 16 << = 32 com C=0
+ROL     ; AC = 32 (0,0,0,0,0)
+STA T4
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 32 << = 64 com C=0
+ROL     ; AC = 64 (0,0,0,0,0)
+STA T5
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+
+; 64 << = 128 com C=0
+ROL     ; AC = 128 (1,0,0,0,0)
+STA T6
+JP ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+; 128 << = 0 com C=0
+ROL     ; AC = 0 (0,1,0,1,0)
+STA T7
+JNC ERR
+JN ERR
+JNZ ERR
+JB ERR
+JV ERR
+
+; 0 << = 1 com C=1
+ROL     ; AC = 1 (0,0,0,0,0)
+STA T8
+JN ERR
+JZ ERR
+JV ERR
+JC ERR
+JB ERR
+
+JMP END
+END:
+LDA ZERO
+STA E
+ERR: 
+HLT
+
+ORG 128
+T0: 0
+T1: 0
+T2: 0
+T3: 0
+T4: 0
+T5: 0
+T6: 0
+T7: 0
+T8: 0
+ZERO: 0	
+ONE: 1
+E: 1    ; Variavel para indicar que teve um erro no teste
