@@ -48,6 +48,7 @@ JN P5
 JMP ERR
 
 ; + com + = +
+P5:
 LDA MAXN; AC = 127
 AND ONE	; AC = 127 & 1 = 127
 STA T5
