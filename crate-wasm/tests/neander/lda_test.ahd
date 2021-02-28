@@ -1,0 +1,36 @@
+; Testa carga de registrador
+; carga simples
+LDA ONE ; AC = 1
+STA T0
+JZ ERR 	
+JN ERR 	
+
+; carga modifica a flag z
+LDA ZERO; AC = 0
+STA T1
+JN ERR
+JZ P1
+JMP ERR
+
+; carga modifica a flag n
+P1:
+LDA MAX	; AC = 255(-1)
+STA T2
+JZ ERR	
+JN END	
+JMP ERR
+
+END:    ; se lda não funcionar a flag de erro continuara ativa
+LDA ZERO
+STA E
+ERR:
+HLT
+
+ORG 128
+T0: 1
+T1: 1
+T2: 1
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+E: 1    ; Variavel para indicar que teve um erro no teste

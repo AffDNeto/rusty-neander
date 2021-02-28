@@ -1,0 +1,81 @@
+; Testa jump
+; jmp incondicional com z e n = 0
+LDA ONE
+JMP P1
+STA E
+HLT
+
+; jmp incondicional com z=1
+P1:
+LDA ZERO
+JMP P2
+LDA ONE
+STA E
+HLT
+
+; jmp incondicional com n=1
+P2:
+LDA MAX     ; carrega ac com 255(-1)
+JMP P3
+LDA ONE
+STA E
+HLT
+
+; JZ com z=1
+P3:
+LDA ZERO
+JZ R1
+JMP ERR     ; nesse ponto jmp já foi testado
+
+; JZ deve manter os codigos de condição intactos
+R1:
+JZ P4
+JMP ERR
+
+; JZ com z=0 e n = 0
+P4:
+LDA ONE
+JZ ERR
+JMP P5
+
+; JZ com z=0 e n = 1
+P5:
+LDA MAX
+JZ ERR
+JMP P6
+
+; JN com z=0 e n = 1
+P6:
+LDA MAX
+JN R2
+JMP ERR
+
+; JN deve manter os codigos de condição intactos
+R2:
+JN P7
+JMP ERR
+
+; JN com z=0 e n = 0
+P7:
+LDA ONE
+JN ERR
+JMP P8
+
+; JN com z=1 e n = 0
+P8:
+LDA ZERO
+JN ERR
+JMP END
+
+
+ERR: 
+LDA ONE
+STA E
+END:
+HLT
+
+ORG 128
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+E: 0    ; Variavel para indicar que teve um erro no teste

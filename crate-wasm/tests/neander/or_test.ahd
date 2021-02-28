@@ -1,0 +1,75 @@
+; Teste or
+; A or A = A
+LDA MAXN; AC = 127
+OR MAXN ; AC = 127 & 127 = 127
+STA T0
+JN ERR
+JZ ERR
+NOT
+ADD ONE ; AC = -127
+ADD MAXN; AC = -127 + 127 = 0
+JZ P1
+JMP ERR
+
+; !A or A = 255
+P1:
+LDA MAXN; AC = 127
+NOT
+OR MAXN ; AC = !127 | 127 = FF
+STA T1
+JZ ERR
+JN P2
+JMP ERR
+P2: NOT
+ADD ONE ; AC = 1
+ADD MAX ; AC = 1 + (-1) = 0
+JZ P3	
+JMP ERR
+
+; A or 0 = A
+P3:
+LDA MAXN; AC = 127
+OR ZERO; AC = AC | 0 = 127
+STA T2
+JN ERR
+JZ P4	
+JMP ERR
+P4: 
+NOT
+ADD ONE ; AC = -127
+ADD MAXN; AC = -127 + 127 = 0
+JZ P5
+JMP ERR
+
+; A or FF = FF
+P5:
+LDA MAXN; AC = 127
+OR MAX  ; AC = 127 & 255 = 255
+STA T3
+JZ ERR
+JN P6
+JMP ERR
+P6:
+NOT
+ADD ONE ; Complemento de 2; AC = 1
+ADD MAX ; AC = 1 + (-1)
+JZ END
+JMP ERR
+
+ERR: 
+LDA ONE
+STA E
+END:
+HLT
+
+ORG 128
+T0: 1
+T1: 1
+T2: 1
+T3: 1
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maximo em complemento de 2
+MINN:128; Valor minimo negativo em complemento de 2	
+E: 0    ; Variavel para indicar que teve um erro no teste

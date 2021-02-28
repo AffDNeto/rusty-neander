@@ -1,0 +1,76 @@
+; Teste and
+; 1 and 0 = 0
+LDA ONE ; AC = 1
+AND ZERO; AC = 0 & 1 = 0
+STA T0
+JN ERR
+JZ P1
+JMP ERR
+
+; 0 and 1 = 0
+P1:
+LDA ZERO; AC = 0
+AND ONE ; AC = 0 & 1 = 0
+STA T1
+JN ERR	
+JZ P2	
+JMP ERR
+
+; !a and a = 0
+P2:
+LDA MAXN; AC = 127
+NOT
+AND MAXN; AC = !AC & 127 = 0
+STA T2
+JN ERR
+JZ P3	
+JMP ERR
+
+; a and a = a
+P3:
+LDA MAXN; AC = 127
+AND MAXN; AC = 127 & 127 = 127
+STA T3
+NOT
+ADD ONE ; Complemento de 2; AC = -127
+ADD MAXN; AC = -127 + 127
+JN ERR
+JZ P4
+JMP ERR
+
+; - and - = -
+P4:
+LDA MINN; AC = -128
+AND MAX ; AC = -128 & -1(255) = -128
+STA T4
+JZ ERR
+JN P5
+JMP ERR
+
+; + com + = +
+LDA MAXN; AC = 127
+AND ONE	; AC = 127 & 1 = 127
+STA T5
+JZ ERR
+JN END
+JMP ERR
+
+ERR: 
+LDA ONE
+STA E
+END:
+HLT
+
+ORG 128
+T0: 1
+T1: 1
+T2: 1
+T3: 1
+T4: 1
+T5: 1
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maximo em complemento de 2
+MINN:128; Valor minimo negativo em complemento de 2	
+E: 0    ; Variavel para indicar que teve um erro no teste

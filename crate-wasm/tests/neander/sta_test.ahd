@@ -1,0 +1,26 @@
+; Testa guardar na memoria
+LDA MAX ; AC = 255(-1)
+STA T0
+LDA T0  ; AC = 255(-1)
+JZ ERR 	
+JN P1
+JMP ERR 	
+P1:
+ADD ONE ; AC = 255 + 1 = 0 e sobra 1
+STA T1
+JN ERR
+JZ END
+JMP ERR
+
+ERR: 
+LDA ONE
+STA E
+END:
+HLT
+
+ORG 128
+T0: 1
+T1: 1
+ONE: 1
+MAX: 255; Valor maximo em byte
+E: 0    ; Variavel para indicar que teve um erro no teste
