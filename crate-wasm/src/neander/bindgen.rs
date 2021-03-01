@@ -4,11 +4,11 @@ use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
 use crate::{common::{memory_trait::Memory, register_trait::{RegisterBank, Runner}}};
 
-use super::NeanderExp;
+use super::core::NeanderMachine;
 
 #[wasm_bindgen]
 pub struct NeanderJS {
-    cpu: NeanderExp
+    cpu: NeanderMachine
 }
 
 #[derive(Serialize, Deserialize)]
@@ -27,7 +27,7 @@ impl NeanderJS {
     #[wasm_bindgen(constructor)]
     pub fn new() -> NeanderJS {
         NeanderJS{
-            cpu: NeanderExp{..Default::default()}
+            cpu: NeanderMachine{..Default::default()}
         }
     }
     
