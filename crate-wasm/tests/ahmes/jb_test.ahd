@@ -69,5 +69,6 @@ ZERO: 0
 ONE: 1
 TWO: 2
 MAX: 255; Valor maximo em byte
-MAXN:127; Valor maxime em complemento de 2
+MAXN:127; Valor maximo em complemento de 2
+MINN:128; Valor minimo em complemento de 2
 E: 1    ; Variavel para indicar que teve um erro no teste (1=ERROR)

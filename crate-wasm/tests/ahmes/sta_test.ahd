@@ -26,6 +26,7 @@ HLT
 
 ORG 128
 T0: 1
+ZERO:0
 ONE: 1
 MAX: 255; Valor maximo em byte
 E: 1    ; Variavel para indicar que teve um erro no teste

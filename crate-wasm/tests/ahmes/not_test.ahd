@@ -30,7 +30,7 @@ JZ P3
 JMP ERR
 
 ; NOT(NOT A) = A
-P1:
+P3:
 LDA ZERO; AC = 0
 NOT
 NOT

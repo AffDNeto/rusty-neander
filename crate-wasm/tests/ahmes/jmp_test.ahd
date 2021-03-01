@@ -23,24 +23,24 @@ JMP P3
 HLT
 
 ; jmp incondicional com (0,0,0,1,0)
-P2:
+P3:
 LDA MAX ; carrega ac com 255(-1)
 ADD TWO ; 255+2 = 1 C=1
-JMP P3
-HLT
-
-; jmp incondicional com (0,0,1,0,0)
-P3:
-LDA MIXN; carrega ac com 128
-SUB ONE ; 128-1 = 127 V=1
 JMP P4
 HLT
 
-; jmp incondicional com (0,0,0,0,1)
+; jmp incondicional com (0,0,1,0,0)
 P4:
+LDA MINN; carrega ac com 128
+SUB ONE ; 128-1 = 127 V=1
+JMP P5
+HLT
+
+; jmp incondicional com (0,0,0,0,1)
+P5:
 LDA ZERO; carrega ac com 0
 SUB ONE ; 0-1=255 N,B=1
-LTA ONE ; N=0
+LDA ONE ; N=0
 JMP END
 HLT
 
@@ -52,5 +52,7 @@ HLT
 ORG 128
 ZERO: 0	
 ONE: 1
+TWO: 2
 MAX: 255; Valor maximo em byte
+MINN: 128
 E: 1    ; Variavel para indicar que teve um erro no teste (1 = ERRO)
