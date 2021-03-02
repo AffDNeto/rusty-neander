@@ -20,7 +20,7 @@ LDA ONE
 JN ERR
 
 ; JN com (0,1,1,1,1)
-LDA MAX
+LDA ZERO
 SUB ONE  ; 0-1 = 255, B=1
 ADD ONE  ; 255 + 1 = 0, V,C,Z=1 e N=0
 JN ERR

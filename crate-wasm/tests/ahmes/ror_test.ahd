@@ -94,7 +94,7 @@ STA E
 ERR: 
 HLT
 
-ORG 128
+ORG 200
 T0: 0
 T1: 0
 T2: 0

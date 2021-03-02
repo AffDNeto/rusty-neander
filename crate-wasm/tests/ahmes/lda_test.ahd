@@ -1,4 +1,8 @@
 ; Testa carga de registrador
+; Nenhuma instrucção testada deve ser capa de modificar os sinais de flag
+LDA ZERO
+ADD ZERO
+SUB ZERO
 
 ; carga simples
 LDA ONE ; AC = 1

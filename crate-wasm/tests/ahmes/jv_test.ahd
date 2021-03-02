@@ -7,7 +7,7 @@ SUB ZERO
 
 ; JV com (0,0,1,0,0)
 LDA MINN
-ADD MAXN; 128+127 = 1, v=1 c=0
+SUB ONE; 128-1 = 127, v=1 c=0
 JV P1
 JMP ERR
 P1:
@@ -72,5 +72,5 @@ ZERO: 0
 ONE: 1
 MAX: 255; Valor maximo em byte
 MAXN:127; Valor maxime em complemento de 2
-MINN:127; Valor minimo em complemento de 2
+MINN:128; Valor minimo em complemento de 2
 E: 1    ; Variavel para indicar que teve um erro no teste (1=ERROR)
