@@ -66,7 +66,7 @@ pub trait ExtendedALU: SimpleAlu {
     /// Does does a shift left operation without setting any flags
     /// So it can be used by the rotate left final implementation. 
     fn _shl(&self, a: u8) -> (u8, bool) {
-        let carry = ( a & 0b1000_0000) == 1;
+        let carry = ( a & 0b1000_0000) != 0;
         let result = a << 1;
 
         return (result, carry)
@@ -75,7 +75,7 @@ pub trait ExtendedALU: SimpleAlu {
     /// Does does a shift right operation without setting any flags
     /// So it can be used by the rotate right final implementation. 
     fn _shr(&self, a: u8) -> (u8, bool) {
-        let carry = ( a & 0b0000_0001) == 1;
+        let carry = ( a & 0b0000_0001) != 0;
         let result = a >> 1;
 
         return (result, carry)
@@ -84,12 +84,14 @@ pub trait ExtendedALU: SimpleAlu {
     fn shl(&mut self, a: u8) -> u8 {
         let (result, carry) = self._shl(a);
         self.set_carry(carry);
+        self.compute_flags(result);
         return result
     }
 
     fn shr(&mut self, a: u8) -> u8{
         let (result, carry) = self._shr(a);
         self.set_carry(carry);
+        self.compute_flags(result);
         return result
     }
 
@@ -97,10 +99,11 @@ pub trait ExtendedALU: SimpleAlu {
         let (mut result, carry) = self._shl(a);
         
         if self.get_carry(){
-            result &= 0b0000_0001;
+            result |= 0b0000_0001;
         }
 
         self.set_carry(carry);
+        self.compute_flags(result);
         return result
     }
 
@@ -108,10 +111,11 @@ pub trait ExtendedALU: SimpleAlu {
         let (mut result, carry) = self._shr(a);
         
         if self.get_carry(){
-            result &= 0b1000_0000;
+            result |= 0b1000_0000;
         }
 
         self.set_carry(carry);
+        self.compute_flags(result);
         return result
     }
 }

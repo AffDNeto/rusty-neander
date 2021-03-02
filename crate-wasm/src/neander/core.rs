@@ -155,7 +155,7 @@ impl Runner for NeanderMachine {
 
 impl NeanderMachine {
     fn ula_operation(&mut self) {
-        self.pre_ula_operation();
+        self.get_operator_from_memory();
         let operation = (self.get_ri() & 0b1111_0000) >> 4;
         let a = self.get_register(self.ri_reg());
         let b = self.get_rdm();

@@ -34,6 +34,7 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     /// stoped running in case it run a halt instruction
     fn step_code(&mut self) -> bool {
         self.search_instruction();
+        self.increment_instruction_counter();
         return self.decode_and_execute()
     }
 
@@ -89,7 +90,7 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     }
 
     // Prepares the registers for an ALU operation based on the RI
-    fn pre_ula_operation(&mut self) {
+    fn get_operator_from_memory(&mut self) {
         self.read_from_pc();
         self.set_rem(self.get_rdm());
         self.read_with_mode();

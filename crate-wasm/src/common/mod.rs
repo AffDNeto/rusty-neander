@@ -43,6 +43,7 @@ pub trait NeanderOperations: BasicALU {
 }
 
 pub trait AhmesInstructions {
+    fn sub(&mut self) -> bool;
     fn jump_non_zero(&mut self) -> bool;
     fn jump_non_negative(&mut self) -> bool;
     fn jump_overflow(&mut self) -> bool;
@@ -84,6 +85,7 @@ pub trait Memory<T> {
     }
 }
 
+#[derive(Debug)]
 pub struct Memory256 {
     pub mem: [u8; 256],
     pub access_counter: usize
