@@ -1,0 +1,46 @@
+; Testa not
+; reseta flags
+LDR A ZERO
+SHR A
+
+; NOT 00 = FF
+LDR A ZERO
+NOT A     
+STR A T0
+JZ ERR
+JC ERR
+JN N1
+JMP ERR
+
+N1: ; NOT FF = 00
+LDR B MAX	
+NOT B     
+STR B T1
+JN ERR
+JC ERR
+JZ N2
+JMP ERR
+
+N2: ; NOT (NOT A) = A
+LDR X ZERO
+NOT X
+NOT X
+STR X T2
+JN ERR
+JC ERR
+JZ END
+JMP ERR
+
+END:
+LDR A ZERO
+STR A E
+ERR: 
+HLT
+
+ORG 128
+T0: 1
+T1: 1
+T2: 1
+ZERO: 0	
+MAX: 255; Valor maximo em byte
+E: 1    ; Variavel para indicar que teve um erro no teste

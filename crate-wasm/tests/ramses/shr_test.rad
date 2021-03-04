@@ -1,0 +1,105 @@
+; Teste shift
+; reseta flags
+LDR A ZERO
+ADD A ZERO
+
+; shift right
+; 128 >> = 64 com C=0
+LDR A MINN
+SHR A
+STR A T0
+JN ERR
+JZ ERR
+JC ERR
+
+; 64 >> = 32 com C=0
+SHR A
+STR A T1
+JN ERR
+JZ ERR
+JC ERR
+
+; 32 >> = 16 com C=0
+SHR A
+STR A T2
+JN ERR
+JZ ERR
+JC ERR
+
+; 16 >> = 8 com C=0
+SHR A
+STR A T3
+JN ERR
+JZ ERR
+JC ERR
+
+; 8 >> = 4 com C=0
+SHR A
+STR A T4
+JN ERR
+JZ ERR
+JC ERR
+
+; 4 >> = 2 com C=0
+SHR A
+STR A T5
+JN ERR
+JZ ERR
+JC ERR
+
+; 2 >> = 1 com C=0
+SHR A
+STR A T6
+JN ERR
+JZ ERR
+JC ERR
+
+; 1>> = 0 com C=0
+SHR A
+STR A T7
+JN ERR
+JC N1
+JMP ERR
+N1:
+JZ N2
+JMP ERR
+
+N2: ; 0>> = 0 com C=1
+SHR A
+STR A T8
+JN ERR
+JC ERR
+JZ N3
+
+N3: ; Outros registradores
+LDR B #1
+SHR B
+STR B T9
+
+LDR X #2
+SHR X
+STR X T10
+
+JMP END
+END:
+LDR A ZERO
+STR A E
+ERR: 
+HLT
+
+ORG 200
+T0: 5
+T1: 5
+T2: 5
+T3: 5
+T4: 5
+T5: 5
+T6: 5
+T7: 5
+T8: 5
+T9: 5
+T10: 5
+ZERO:0	
+ONE: 1
+MINN: 128
+E: 1    ; Variavel para indicar que teve um erro no teste

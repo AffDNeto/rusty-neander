@@ -1,0 +1,51 @@
+; Testa guardar na memoria
+;Enderecamento
+; direto
+LDR A #1
+STR A T0
+
+; indireto
+LDR A #2
+STR A MI,I
+
+; imediato
+LDR A #3
+STR A #255 ; Str com endecamento imediato guarda o valor na posição atual e ignora o valor imediato
+
+; indexado
+LDR A #3
+LDR X #0
+STR A T3,X
+
+; C é zerado para não afetar os testes
+LDR A #0
+ADD A #0
+
+; flags não são alteradas
+LDR B #0
+STR B #0
+JN ERR
+JC ERR
+JZ N1
+JMP ERR
+
+N1:
+LDR B #128
+STR B #0
+JZ ERR
+JC ERR
+JN END
+JMP ERR
+
+END:
+LDR A #0
+STR A E
+ERR:
+HLT
+
+ORG 128
+T0: 0
+T1: 0
+T3: 0
+MI: 129
+E: 1    ; Variavel para indicar que teve um erro no teste

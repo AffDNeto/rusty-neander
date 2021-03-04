@@ -1,0 +1,77 @@
+; Teste or
+; reseta flags
+LDR A ZERO
+SHR A
+
+; A or A = A
+LDR A MAXN; AC = 127
+OR A MAXN ; AC = 127 & 127 = 127
+STR A T0
+JN ERR
+JZ ERR
+JC ERR
+
+; !A or A = 255
+LDR A MAXN; AC = 127
+NOT A
+OR A MAXN ; AC = !127 | 127 = FF
+STR A T1
+JZ ERR
+JC ERR
+JN N1
+JMP ERR
+
+N1: ; A or 0 = A
+LDR A MAXN; AC = 127
+OR A ZERO; AC = AC | 0 = 127
+STR A T2
+JN ERR
+JC ERR
+JZ ERR	
+
+; A or FF = FF
+LDR A MAXN; AC = 127
+OR A MAX  ; AC = 127 & 255 = 255
+STR A T3
+JZ ERR
+JC ERR
+JN N2
+JMP ERR
+
+N2: ; Modo imediato
+LDR B #HAA
+OR B #1
+STR B T4
+
+; Modo indireto
+LDR B #HAA
+OR B IDI,I
+STR B T5
+
+; Modo indexado
+LDR B #HAA
+LDR X #1
+OR B IDI,X
+STR B T6
+
+END:
+LDR A ZERO
+STR A E
+ERR: 
+HLT
+
+ORG 128
+TI: 0
+TX: 255
+IDI:128
+T0: 5
+T1: 5
+T2: 5
+T3: 5
+T4: 5
+T5: 5
+T6: 5
+ZERO: 0	
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maximo em complemento de 2
+E: 1    ; Variavel para indicar que teve um erro no teste

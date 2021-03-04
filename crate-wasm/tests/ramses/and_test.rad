@@ -1,0 +1,93 @@
+; Teste and
+; reseta flags
+LDR A ZERO
+SHR A
+
+; 1 and 0 = 0
+LDR A ONE 
+AND A ZERO
+STR A T0
+JN ERR
+JC ERR
+JZ P1
+JMP ERR
+
+; 0 and 1 = 0
+P1:
+LDR A ZERO
+AND A ONE 
+STR A T1
+JN ERR
+JC ERR
+JZ P2	
+JMP ERR
+
+; !a and a = 0
+P2:
+LDR A MAXN
+NOT A
+AND A MAXN
+STR A T2
+JN ERR
+JC ERR
+JZ P3	
+JMP ERR
+
+; a and a = a
+P3:
+LDR A MAXN
+AND A MAXN
+STR A T3
+JN ERR
+JC ERR
+JZ ERR
+
+; A and TRUE = A
+P4:
+LDR A MAXN
+AND A MAX 
+STR A T4
+JZ ERR
+JC ERR
+JN ERR
+
+; Modo imediato
+LDR B #HFF
+AND B #1
+STR B T5
+
+; Modo indireto
+LDR B #HFF
+AND B IDI,I
+STR B T6
+
+; Modo indexado
+LDR B #HFF
+LDR X #1
+AND B IDI,X
+STR B T7
+
+END:
+LDR A ZERO
+STR A E
+ERR: 
+HLT
+
+ORG 128
+TI: 0
+TX: 255
+IDI:128
+T0: 5
+T1: 5
+T2: 5
+T3: 5
+T4: 5
+T5: 5
+T6: 5
+T7: 5
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maximo em complemento de 2
+MINN:128; Valor minimo negativo em complemento de 2	
+E: 1    ; Variavel para indicar que teve um erro no teste

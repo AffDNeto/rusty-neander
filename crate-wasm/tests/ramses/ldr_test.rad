@@ -1,0 +1,72 @@
+; Testa carga de registrador
+; Nenhuma instrucao testada deve ser capa de modificar os sinais de flag
+LDR A ZERO
+ADD A ZERO
+
+; carga simples
+LDR A ONE
+JZ ERR
+JN ERR 	
+JC ERR
+STR A T0
+
+; carga modifica a flag z
+LDR A ZERO; AC = 0
+JN ERR
+JC ERR
+JZ N1
+JMP ERR
+N1:
+STR A T1
+
+; carga modifica a flag n
+LDR A MAX	; AC = 255(-1)
+JZ ERR
+JC ERR
+JN N2
+JMP ERR
+N2:	
+STR A T2
+
+; carga indireta
+LDR A TI,I
+STR A T3
+
+; carga indexada
+LDR X ZERO
+LDR A TI,X
+STR A T4
+
+; carga imediata 
+LDR A #1
+STR A T5
+
+; carga no registrador correto
+LDR A #1
+LDR B #2
+LDR X #3
+STR A T6
+STR A T7
+STR A T8
+
+END:    ; se lda não funcionar a flag de erro continuara ativa
+LDR A ZERO
+STR A E
+ERR:
+HLT
+
+ORG 128
+TI:  128
+T0: 10
+T1: 10
+T2: 10
+T3: 10
+T4: 10
+T5: 10
+T6: 10
+T7: 10
+T8: 10
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+E: 1    ; Variavel para indicar que teve um erro no teste

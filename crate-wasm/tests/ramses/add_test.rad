@@ -1,0 +1,72 @@
+; Testa adicao ahmes
+; reseta flags
+LDR A ZERO
+SHR A
+
+; 0 + 1 = 1
+LDR A ZERO
+ADD A ONE
+STR A T0
+JZ ERR
+JN ERR  
+JC ERR 
+
+;127+1 = 128(-128)
+LDR A MAXN
+ADD A ONE
+STR A T1
+JZ ERR
+JC ERR
+JN N1
+JMP ERR
+
+N1: ; 1+255= 0, carry
+LDR A MAX
+ADD A ONE
+STR A T2
+JN ERR
+JC N2
+JMP ERR
+N2:
+JZ N3
+JMP ERR
+
+N3: ; modo indireto
+LDR B #1
+ADD B IDI,I ; deve apontar para TI
+STR B T3
+
+; modo indexado
+LDR B #2
+LDR X #1
+ADD B IDI,X ; deve apontar para TX
+STR B T4
+
+; modo imediato
+LDR B #3
+ADD B #1
+STR B T5
+
+JMP END
+ERR: 
+LDR A ONE
+STR A E
+END:
+HLT
+
+ORG 128
+TI: 1
+TX: 1
+IDI:128
+T0: 50
+T1: 50
+T2: 50
+T3: 50
+T4: 50
+T5: 50
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+MAXN:127; Valor maximo em complemento de 2
+MINN:128; Valor minimo negativo em complemento de 2
+E: 0    ; Variavel para indicar que teve um erro no teste

@@ -1,0 +1,70 @@
+; Testa jumps com flag C
+; Reseta flags
+LDR A ZERO
+SHR A
+; Comentarios com as flags esperadas seguem a seguinte ordem (N,Z,C)
+
+LDR B #0 ; registrador sera usado para manter informação de qual teste esta sendo feito
+
+; JC com (0,0,1)
+ADD B #1
+LDR A MAX
+SHR A
+JC P1
+JMP ERR
+P1:
+JN ERR
+JZ ERR
+
+; JC com (0,0,0)
+ADD B #1
+LDR A ZERO
+SHR A
+JC ERR
+
+; JC com (1,0,0)
+ADD B #1
+LDR A MAX
+JC ERR
+
+; JC com (0,1,0)
+ADD B #1
+LDR A ZERO 
+JC ERR
+
+; jmp incondicional indireto
+P4:
+ADD B #1
+LDR A ONE
+SHR A
+JC IDI,I
+HLT
+
+; jmp indexado
+P5:
+ADD B #1
+LDR X #3
+LDR A ONE
+SHR A
+JC P6,X
+HLT
+
+END: 
+LDR A ZERO
+STR A E
+ERR:
+HLT
+
+ORG 100
+P6:
+JMP P5  ;100
+HLT     ;102
+JMP END ;103
+HLT 
+
+ORG 128
+IDI: 100
+ZERO: 0	
+ONE: 1
+MAX: 255; Valor maximo em byte
+E: 1    ; Variavel para indicar que teve um erro no teste (1=ERROR)

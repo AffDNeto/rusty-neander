@@ -1,0 +1,40 @@
+; Testa subrotina
+LDR A #0
+LDR B #0
+JSR SUB1
+JSR SUB2
+JSR SUB2
+JSR SUB1
+
+STR A T0
+STR B T1
+
+; Verifica mudança de flags
+; (0,0,0)
+LDR A #1
+JSR NOP1
+JN ERR
+JZ ERR
+JC ERR
+
+END: 
+LDR A #0
+STR A E
+ERR:
+HLT
+
+NOP1: NOP
+JMP NOP1,I
+
+SUB1: NOP
+ADD A #1
+JMP SUB1,I
+
+SUB2: NOP
+ADD B #1
+JMP SUB2,I
+
+ORG 128
+T0: 0
+T1: 0
+E: 1    ; Variavel para indicar que teve um erro no teste (1 = ERRO)
