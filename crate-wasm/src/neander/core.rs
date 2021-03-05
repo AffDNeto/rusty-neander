@@ -157,7 +157,7 @@ impl NeanderMachine {
     fn ula_operation(&mut self) {
         self.get_operator_from_memory();
         let operation = (self.get_ri() & 0b1111_0000) >> 4;
-        let a = self.get_register(self.ri_reg());
+        let a = self.get_register(self.decode_register());
         let b = self.get_rdm();
         let result: u8; 
         match operation {
@@ -171,13 +171,13 @@ impl NeanderMachine {
             _ => result = 0
         }
 
-        self.set_register(self.ri_reg(), result);
+        self.set_register(self.decode_register(), result);
     }
 
     fn op_not(&mut self) {
-        let a = self.get_register(self.ri_reg());
+        let a = self.get_register(self.decode_register());
         let result = self.not(a);
-        self.set_register(self.ri_reg(), result);
+        self.set_register(self.decode_register(), result);
     }
 }
 

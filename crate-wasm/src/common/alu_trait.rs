@@ -63,6 +63,13 @@ pub trait ExtendedALU: SimpleAlu {
         return result;
     }
 
+    fn neg(&mut self, a:u8) -> u8 {
+        let result = (!a).wrapping_add(1);
+        self.compute_flags(a);
+        self.set_carry(a==0);
+        return result;
+    }
+    
     /// Does does a shift left operation without setting any flags
     /// So it can be used by the rotate left final implementation. 
     fn _shl(&self, a: u8) -> (u8, bool) {

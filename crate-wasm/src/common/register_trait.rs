@@ -74,7 +74,7 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     }
 
     /// returns the index of the register signalized on RI 
-    fn ri_reg(&self) -> u8 { 
+    fn decode_register(&self) -> u8 { 
         // By default will return the first register
         return 0
     }
@@ -83,7 +83,7 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     fn str(&mut self) {
         self.read_from_pc();
         let pos = self.get_rdm();
-        let value = self.get_register(self.ri_reg());
+        let value = self.get_register(self.decode_register());
         self.set_rem(pos);
         self.set_rdm(value);
         self.write_with_mode();
