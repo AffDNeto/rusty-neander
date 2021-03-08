@@ -127,34 +127,52 @@ impl RegisterBank for RamsesMachine {
     }
 }
 impl MemoryAccess for RamsesMachine {
-    fn index_registrer_id(&self) -> u8 { return 3; }
+    fn index_registrer_id(&self) -> u8 { return 2; }
 }
 impl Runner for RamsesMachine {
     fn read_with_mode(&mut self) {
-        println!("Reading with mode");
+        println!("Reading with mode {} from {},{:02X} ", self.decode_mode(), self.get_rem(), self.get_rem());
         match self.decode_mode() {
             0 => self.direct_read(),
             1 => self.indirect_read(),
-            2 => self.indexed_read(),
-            3 => self.imediate_read(),
+            2 => self.imediate_read(),
+            3 => self.indexed_read(),
             _ => panic!("Invalid read mode")
         }
     }
+    
+    fn read_address_with_mode(&mut self){
+        println!("Getting address to jump with...");
+        match self.decode_mode() {
+            3 => { 
+                // Indexed mode for jmp operations uses the memory position
+                // as a target and not the memory value like the other modes
+                let address = self.get_indexed_address();
+                self.set_rdm(address);
+            },
+            _ => self.read_with_mode()
+        }
+        println!("Address to is {},{:02X}", self.rdm, self.rdm)
+    }
 
     fn write_with_mode(&mut self) {
+        println!("Writing with mode {} from {:02X} ", self.decode_mode(), self.get_rem());
         match self.decode_mode() {
             0 => self.direct_write(),
             1 => self.indirect_write(),
-            2 => self.indexed_write(),
-            3 => self.imediate_write(),
+            2 => self.imediate_write(),
+            3 => self.indexed_write(),
             _ => panic!("Invalid write mode")
         }
     }
-
+    #[inline]
     fn decode_register(&self) -> u8 {
         (self.get_ri() & 0b0000_1100) >> 2
     }
-
+    #[inline]
+    fn decode_mode(&self) -> u8 {
+        self.get_ri() & 0b0000_0011
+    }
     #[inline]
     fn get_instruction_counter(&self) -> usize {
         return self.instruction_counter
@@ -167,13 +185,13 @@ impl Runner for RamsesMachine {
 
     fn decode_and_execute(&mut self) -> bool {
         let operator = (self.decode_instruction()) >> 4;
-        println!("Instruction op {:#x}", self.get_ri());
+        println!("Instruction op {},{:#x} from {:02X}", self.get_ri(), self.get_ri(), self.get_pc());
         match operator {
             0x1 => self.str(),//store
             0x2..=0x7 | 0xE
                 => return self.ula_operation(),//ula operation
-            0x8..=0xA => return self.jump_operation(),
-            0xB => return self.jsr(),
+            0x8..=0xB => return self.jump_operation(),
+            0xC => return self.jsr(),
             0x0 => return true,// NOP
             0xF => return false,// HLT
             _ => {
@@ -191,12 +209,6 @@ impl Runner for RamsesMachine {
 impl ExtendedALU for RamsesMachine {}
 
 impl RamsesMachine {
-    fn decode_mode(&self) -> u8 {
-        self.get_ri() & 0b0000_0011
-    }
-    fn decode_instruction(&self) -> u8 {
-        self.get_ri() & 0b1111_0000
-    }
     fn jsr(&mut self) -> bool {
         self.get_operator_from_memory();
         self.set_rem(self.get_rdm());
@@ -206,9 +218,11 @@ impl RamsesMachine {
         self.direct_write(); // Write return address in the subroutine header
         return true
     }
+
     fn jump_operation(&mut self) -> bool {
         // Don't jump if the instruction mode is imediate
-        if self.decode_mode() == 3 {
+        if self.decode_mode() == 2 {
+            self._jmp_if(false);
             return true
         }
         let jump_op = self.decode_instruction();
@@ -343,11 +357,15 @@ mod ramses_tests {
         let start = read(ramses_path(filename.as_ref()));
         let result = read(ramses_path(&result_file));
         ramses.memory = start;
-
-        for _ in 1..100 {
-            if !ramses.step_code() { break; }
+        println!("[{}]", start.iter().fold(
+            String::new(),
+            |acc, &num| acc + &format!("{:02X}",&num)+", "
+        ));
+        for _ in 1..40 {
             println!("{:?}", ramses);
+            if !ramses.step_code() { break; }
         }
+        println!("{:?}", ramses);
 
         compare_mem(&ramses.memory, &result);
         println!("What changed");

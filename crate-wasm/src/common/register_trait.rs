@@ -58,6 +58,12 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
         self.direct_read();
     }
 
+    /// Reads the address used by intruction with mode, used by jump functions
+    /// By default is the same as the read_with_mode method
+     fn read_address_with_mode(&mut self){
+         self.read_with_mode();
+    }
+
     /// Writes to memory what is on th addressing mode set in RI
     fn write_with_mode(&mut self) {
         self.direct_write();
@@ -67,18 +73,33 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     fn _jmp_if(&mut self, condition: bool) {
         // do the same behaviour of the machine, 
         //searching the destiny address even if no jump occurs
-        self.read_from_pc();
+        self.set_rem(self.get_pc());
+        self.read_address_with_mode();
         if condition {
             self.set_pc(self.get_rdm());
+        }else{
+            self._increment_pc();
         }
     }
 
     /// returns the index of the register signalized on RI 
+    #[inline]
     fn decode_register(&self) -> u8 { 
         // By default will return the first register
         return 0
     }
+    
+    /// Returns the memory mode of the instruction, by default it is always 0
+    #[inline]
+    fn decode_mode(&self) -> u8 {
+        return 0
+    }
 
+    //// Returns the current instruction identifier, by default it is the first 4 bits
+    #[inline]
+    fn decode_instruction(&self) -> u8 {
+        self.get_ri() & 0b1111_0000
+    }
     /// Stores from register to memmory
     fn str(&mut self) {
         self.read_from_pc();

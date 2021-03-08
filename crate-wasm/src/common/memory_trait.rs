@@ -30,30 +30,34 @@ pub trait Memory {
 
 pub trait MemoryAccess: Memory + RegisterBank{
     fn index_registrer_id(&self) -> u8;
-    fn indirect_read(&mut self) {
+    fn get_indirect_address(&mut self) -> u8 {
         self.direct_read();
-        self.set_rem(self.get_rdm());
+        self.get_rdm()
+    }
+    fn get_indexed_address(&mut self) -> u8 {
+        let index = self.get_register(self.index_registrer_id());
+        self.direct_read();
+        self.get_rdm().wrapping_add(index)
+    }
+    fn indirect_read(&mut self) {
+        let address = self.get_indirect_address();
+        self.set_rem(address);
         self.direct_read();
     }
     fn indirect_write(&mut self) {
-        self.direct_read();
-        self.set_rem(self.get_rdm());
+        let address = self.get_indirect_address();
+        self.set_rem(address);
         self.direct_write();
     }
+
     fn indexed_read(&mut self){ 
-        let index = self.get_register(self.index_registrer_id());
-        self.direct_read();
-        self.set_rem(
-            index.wrapping_add(self.get_rdm())
-        );
+        let address = self.get_indexed_address();
+        self.set_rem(address);
         self.direct_read();
     }
     fn indexed_write(&mut self) { 
-        let index = self.get_register(self.index_registrer_id());
-        self.direct_read();
-        self.set_rem(
-            index.wrapping_add(self.get_rdm())
-        );
+        let address = self.get_indexed_address();
+        self.set_rem(address);
         self.direct_write();
     }
     /// Value is already in the RDM register
