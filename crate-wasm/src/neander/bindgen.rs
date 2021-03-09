@@ -2,7 +2,11 @@ use std::convert::TryInto;
 
 use wasm_bindgen::prelude::*;
 use serde::{Serialize, Deserialize};
-use crate::{common::{memory_trait::Memory, register_trait::{RegisterBank, Runner}}};
+use crate::common::{
+    memory_trait::Memory, 
+    register_trait::RegisterBank, 
+    runner_trait::Runner
+};
 
 use super::core::NeanderMachine;
 

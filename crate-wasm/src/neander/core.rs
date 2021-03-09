@@ -1,4 +1,9 @@
-use crate::common::{alu_trait::SimpleAlu, memory_trait::Memory, register_trait::{RegisterBank, Runner}};
+use crate::common::{
+    alu_trait::SimpleAlu, 
+    memory_trait::Memory, 
+    register_trait::RegisterBank,
+    runner_trait::Runner
+};
 
 #[derive(Debug)]
 pub struct NeanderMachine{

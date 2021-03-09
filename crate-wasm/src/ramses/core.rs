@@ -1,6 +1,11 @@
 use crate::common::alu_trait::ExtendedALU;
 use crate::common::memory_trait::MemoryAccess;
-use crate::common::{alu_trait::SimpleAlu, memory_trait::Memory, register_trait::{RegisterBank, Runner}};
+use crate::common::{
+    alu_trait::SimpleAlu, 
+    memory_trait::Memory, 
+    register_trait::RegisterBank, 
+    runner_trait::Runner
+};
 
 #[derive(Debug)]
 pub struct RamsesMachine{
@@ -156,7 +161,7 @@ impl Runner for RamsesMachine {
     }
 
     fn write_with_mode(&mut self) {
-        println!("Writing with mode {} from {:02X} ", self.decode_mode(), self.get_rem());
+        println!("Writing with mode {} to {},{:02X}: {} ", self.decode_mode(), self.rem, self.get_rem(), self.rdm);
         match self.decode_mode() {
             0 => self.direct_write(),
             1 => self.indirect_write(),
@@ -187,7 +192,7 @@ impl Runner for RamsesMachine {
         let operator = (self.decode_instruction()) >> 4;
         println!("Instruction op {},{:#x} from {:02X}", self.get_ri(), self.get_ri(), self.get_pc());
         match operator {
-            0x1 => self.str(),//store
+            0x1 => self.ramses_str(),//store
             0x2..=0x7 | 0xE
                 => return self.ula_operation(),//ula operation
             0x8..=0xB => return self.jump_operation(),
@@ -209,13 +214,59 @@ impl Runner for RamsesMachine {
 impl ExtendedALU for RamsesMachine {}
 
 impl RamsesMachine {
+    fn read(&mut self){
+        let value = self._read(self.get_rem() as usize);
+        self.set_rdm(value);
+        self._increment_access_count();
+    }
+    fn write(&mut self){
+        self._write(
+            self.get_rem() as usize,
+            self.get_rdm()
+        );
+        self._increment_access_count();
+    }
+
+    fn ramses_str(&mut self) {
+        let store_value = self.get_register(self.decode_register());
+        match self.decode_mode() {
+            0 => self.str(),
+            1 => {
+                self.set_rem(self.get_pc());
+                self.read();
+                self._increment_pc();
+                self.set_rem(self.get_rdm());
+                self.read();
+                self.set_rem(self.get_rdm());
+                self.set_rdm(store_value);
+                self.write();
+            },
+            2 => {
+                self.set_rem(self.get_pc());
+                self._increment_pc();
+                self.set_rdm(store_value);
+                self.write();
+            },
+            3 => {
+                self.set_rem(self.get_pc());
+                self._increment_pc();
+                self.read();
+                let index = self.get_register(self.index_registrer_id());
+                self.set_rem(self.get_rdm().wrapping_add(index));
+                self.set_rdm(store_value);
+                self.write();
+            },
+            _ => return
+        }
+    }
+
     fn jsr(&mut self) -> bool {
         self.get_operator_from_memory();
         self.set_rem(self.get_rdm());
         self.set_pc(self.get_rdm());
         self._increment_pc();
         self.set_rdm(self.get_pc());
-        self.direct_write(); // Write return address in the subroutine header
+        self.write(); // Write return address in the subroutine header
         return true
     }
 
@@ -302,6 +353,16 @@ mod ramses_tests {
                     println!("Want:{:?}", &b[span.b_start..span.b_end]);
                     println!("Got :{:?}", &a[span.b_start..span.b_end]);
                 },
+                Tag::Delete => {
+                    println!("Deleted found from {} to {}", span.b_start, span.b_end);
+                    println!("Want:{:?}", &b[span.b_start..span.b_end]);
+                    println!("Got :{:?}", &a[span.b_start..span.b_end]);
+                },
+                Tag::Insert => {
+                    println!("Insert found from {} to {}", span.b_start, span.b_end);
+                    println!("Want:{:?}", &b[span.b_start..span.b_end]);
+                    println!("Got :{:?}", &a[span.b_start..span.b_end]);
+                }
                 _ => ()
             }
         }
@@ -368,8 +429,8 @@ mod ramses_tests {
         println!("{:?}", ramses);
 
         compare_mem(&ramses.memory, &result);
-        println!("What changed");
-        compare_mem(&ramses.memory, &start);
+        //println!("What changed");
+        //compare_mem(&ramses.memory, &start);
         
         assert!(ramses.memory==result);
     }

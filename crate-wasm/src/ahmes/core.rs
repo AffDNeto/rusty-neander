@@ -1,5 +1,5 @@
 use crate::common::alu_trait::ExtendedALU;
-use crate::common::register_trait::Runner;
+use crate::common::runner_trait::Runner;
 use crate::common::register_trait::RegisterBank;
 use crate::common::alu_trait::SimpleAlu;
 use crate::common::memory_trait::Memory as MemoryExp;
