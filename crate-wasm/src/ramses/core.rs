@@ -193,7 +193,7 @@ impl Runner for RamsesMachine {
         println!("Instruction op {},{:#x} from {:02X}", self.get_ri(), self.get_ri(), self.get_pc());
         match operator {
             0x1 => self.ramses_str(),//store
-            0x2..=0x7 | 0xE
+            0x2..=0x7 | 0xD | 0xE
                 => return self.ula_operation(),//ula operation
             0x8..=0xB => return self.jump_operation(),
             0xC => return self.jsr(),
@@ -233,8 +233,8 @@ impl RamsesMachine {
             0 => self.str(),
             1 => {
                 self.set_rem(self.get_pc());
-                self.read();
                 self._increment_pc();
+                self.read();
                 self.set_rem(self.get_rdm());
                 self.read();
                 self.set_rem(self.get_rdm());
@@ -261,13 +261,37 @@ impl RamsesMachine {
     }
 
     fn jsr(&mut self) -> bool {
-        self.get_operator_from_memory();
-        self.set_rem(self.get_rdm());
-        self.set_pc(self.get_rdm());
-        self._increment_pc();
-        self.set_rdm(self.get_pc());
-        self.write(); // Write return address in the subroutine header
-        return true
+        let mode = self.decode_mode();
+        if mode == 2 { 
+            self._increment_pc();
+            return true;
+        }else{
+            self.set_rem(self.get_pc());
+            self._increment_pc();
+            self.read();
+            let mut tmp = self.get_rdm();
+            match mode {
+                1 => {
+                    self.set_rem(tmp);
+                    self.read();
+                    tmp = self.get_rdm();
+                    self.set_rem(tmp);
+                },
+                3 => {
+                    tmp = tmp.wrapping_add(
+                        self.get_register(self.index_registrer_id())
+                    );
+                    self.set_rem(tmp);
+                },
+                _ => {
+                    self.set_rem(tmp);
+                }
+            }
+            self.set_rdm(self.get_pc());
+            self.write();
+            self.set_pc(tmp.wrapping_add(1));
+            return true;
+        }
     }
 
     fn jump_operation(&mut self) -> bool {
@@ -288,8 +312,10 @@ impl RamsesMachine {
     }
     fn ula_operation(&mut self) -> bool {
         let operation = self.decode_instruction();
+        println!("Ula op: {:#x}", operation);
         // Retrieve second operator from memory if necessary
-        if let 0x20..=0x50 | 0x70 = self.get_ri() {
+        if let 0x20..=0x50 | 0x70 = operation {
+            println!("Getting operator from memory");
             self.get_operator_from_memory();    
         }
         let a = self.get_register(self.decode_register());
@@ -422,7 +448,7 @@ mod ramses_tests {
             String::new(),
             |acc, &num| acc + &format!("{:02X}",&num)+", "
         ));
-        for _ in 1..40 {
+        for _ in 1..100 {
             println!("{:?}", ramses);
             if !ramses.step_code() { break; }
         }

@@ -51,13 +51,14 @@ pub trait MemoryAccess: Memory + RegisterBank{
     }
 
     fn indexed_read(&mut self){ 
-        let address = self.get_indexed_address();
+        let mut address = self.get_register(self.index_registrer_id());
+        address = address.wrapping_add(self.get_rem());
         self.set_rem(address);
         self.direct_read();
     }
     fn indexed_write(&mut self) { 
-        let mut address = self.get_rdm();
-        address = address.wrapping_add(self.index_registrer_id());
+        let mut address = self.get_register(self.index_registrer_id());
+        address = address.wrapping_add(self.get_rem());
         self.set_rem(address);
         self.direct_write();
     }

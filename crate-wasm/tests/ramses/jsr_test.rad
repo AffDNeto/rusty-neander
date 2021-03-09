@@ -17,6 +17,22 @@ JN ERR
 JZ ERR
 JC ERR
 
+; indireto
+LDR A #0
+JSR JI,i
+STR A T2
+
+; imediato
+LDR A #0
+JSR #100
+STR A T3
+
+; indexado
+LDR X #1
+LDR B #0
+JSR JX,X
+STR B T4
+
 END: 
 LDR A #0
 STR A E
@@ -26,15 +42,22 @@ HLT
 NOP1: NOP
 JMP NOP1,I
 
+ORG 100
 SUB1: NOP
 ADD A #1
 JMP SUB1,I
 
+JX:
+NOP
 SUB2: NOP
 ADD B #1
 JMP SUB2,I
 
 ORG 128
+JI: 100 
 T0: 0
 T1: 0
+T2: 0
+T3: 0
+T4: 0
 E: 1    ; Variavel para indicar que teve um erro no teste (1 = ERRO)
