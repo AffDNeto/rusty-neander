@@ -65,7 +65,7 @@ pub trait ExtendedALU: SimpleAlu {
 
     fn neg(&mut self, a:u8) -> u8 {
         let result = (!a).wrapping_add(1);
-        self.compute_flags(a);
+        self.compute_flags(result);
         self.set_carry(a==0);
         return result;
     }
