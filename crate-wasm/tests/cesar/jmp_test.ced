@@ -1,0 +1,85 @@
+; Testes JMP
+MOV #1 R0
+
+; JUMP COM FLAGS DESLIGADAS
+INC R0
+CCC NZCV
+JMP NX1
+MOV R0 T0
+HLT
+
+NX1:
+; JUMP COM FLAGS LIGADAS
+INC R0
+SCC NZCV
+JMP NX2
+MOV R0 T0
+HLT
+
+NX2:
+; POS INC
+INC R0
+MOV #NX3 R1
+JMP (R1)+
+HLT
+
+NX3:    ; desvio pos inc pulara para essa posicao
+; PRE DEC
+INC R0
+MOV #NX4 R1
+JMP -(R1)
+HLT
+
+NOP     ; desvio pre dec pulara nessa posicao
+NOP
+NX4:
+
+; INDEXADO
+INC R0
+MOV #NX5 R1
+JMP -1(R1)
+HLT
+
+NOP     ; desvio indexado pulara para essa posicao
+NX5:
+; INDIRETO
+INC R0
+MOV #NX6 R1
+JMP (R1)
+HLT
+
+NX6:    ; desvio indireto pulara para essa posicao
+; POS INC INDIRETO
+INC R0
+MOV #NX7 TMP_INDEX
+MOV #TMP_INDEX R1
+JMP ((R1)+)
+HLT
+
+NX7:    ; destino do desvio pos inc indireto 
+; PRE DEC INDIRETO
+INC R0
+MOV #NX8 TMP_INDEX
+MOV #TMP_INDEX R1
+ADD #2 R1    ; ajuste para o pre decremento
+JMP (-(R1))
+HLT
+
+NX8:    ; destino do desvio pre dec indireto
+; INDEXADO INDIRETO
+INC R0
+MOV #END TMP_INDEX
+MOV #TMP_INDEX R1
+ADD #1 R1    ; ajuste para o indexamento
+JMP (-1(R1))
+HLT
+
+END:
+MOV R0 T0
+MOV #0 E
+HLT
+ORG 1024
+E: 1
+T0: 0
+TMP_INDEX: 0
+TEST_STACK: 0

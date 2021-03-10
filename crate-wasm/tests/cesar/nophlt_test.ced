@@ -1,0 +1,10 @@
+; Testes NOP e HLT
+NOP
+NOP
+NOP
+HLT
+; Caso o programa não parar o erro será ativado
+MOV #1 ERROR
+
+ORG 128
+ERROR: 0
