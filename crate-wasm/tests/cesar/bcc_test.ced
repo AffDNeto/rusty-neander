@@ -1,30 +1,30 @@
-; Testes BNE (Z=0)
+; Testes BCC (C=0)
 MOV #1 R0
 
 ; JUMP COM FLAG DESLIGADA
 INC R0
 SCC NZCV
-CCC Z
-BNE NX1
+CCC C
+BCC NX1
 JMP ERR
 
 NX1:
 ; testa se alguma flag foi modificada
-BEQ ERR ; se Z=1
+BCS ERR ; se C=1
 BPL ERR ; se N=0
+BNE ERR ; se Z=0
 BVC ERR ; se V=0
-BCC ERR ; se C=0
 
 ; JUMP COM FLAGS LIGADAS
 INC R0
 SCC NZCV
-BNE  ERR
+BCC  ERR
 
 ; Testa se alguma flag foi modificada
+BEQ ERR ; se Z=0
 BPL ERR ; se N=0
 BVC ERR ; se V=0
-BCC ERR ; se C=0
-BEQ END ; se Z=1
+BCS END ; se C=1
 JMP ERR
 
 END:

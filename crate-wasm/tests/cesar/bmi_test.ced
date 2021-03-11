@@ -1,0 +1,37 @@
+; Testes BMI (N=1)
+MOV #1 R0
+
+; JUMP COM FLAG LIGADAS
+INC R0
+CCC NZCV
+SCC N
+BMI NX1
+JMP ERR
+
+NX1:
+; testa se alguma flag foi modificada
+BPL ERR ; se N=0
+BEQ ERR ; se Z=1
+BVS ERR ; se V=1
+BCS ERR ; se C=1
+
+; JUMP COM FLAGS DESLIGADAS
+INC R0
+CCC NZCV
+BMI  ERR
+
+; Testa se alguma flag foi modificada
+BVS ERR ; se V=1
+BCS ERR ; se C=1
+BEQ ERR ; se Z=1
+BPL END ; se N=0
+JMP ERR
+
+END:
+MOV R0 T0
+MOV #0 E
+ERR:
+HLT
+ORG 1024
+E: 1
+T0: 0
