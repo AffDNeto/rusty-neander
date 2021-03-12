@@ -1,5 +1,5 @@
 ; Testes CCC
-;liga todos codigos de condição
+;liga todos codigos de condiï¿½ï¿½o
 SCC NZCV
 MOV #0 R0
 
@@ -19,12 +19,20 @@ INC R0
 CCC C
 BCC ERROR
 
+SCC NZCV
+INC R0
+CCC NZCV
+BPL ERR
+BNE ERR
+BVC ERR
+BCC ERR
+
 HLT
-ERROR:
+ERR:
 MOV R0 COUNTER
-MOV #1 ERROR
+MOV #1 E
 HLT
 
 ORG 1024
-ERROR: 0
+E: 0
 COUNTER: 0
