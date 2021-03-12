@@ -1,0 +1,86 @@
+; Testes BGE (N=V e Z=0)
+MOV #1 R0
+CCC C
+
+; JUMP COM N,V,Z=0
+INC R0
+CCC ZNV
+BGE NX1
+JMP ERR
+
+NX1:
+; testa se alguma flag foi modificada
+BCS ERR ; se C=1
+BEQ ERR ; se Z=1
+BVS ERR ; se V=1
+BMI ERR ; se N=1
+
+; JUMP COM N,V=1 E Z=0
+INC R0
+SCC NV
+CCC Z
+BGE NX2
+JMP ERR
+
+NX2:
+; testa se alguma flag foi modificada
+BCS ERR ; se C=1
+BEQ ERR ; se Z=1
+BVC ERR ; se V=0
+BPL ERR ; se N=0
+
+; JUMP COM N=1 E V=0 E Z=0, NAO DEVE DESVIAR
+INC R0
+SCC N
+CCC VZ
+BGE  ERR
+
+; Testa se alguma flag foi modificada
+BCS ERR ; se C=1
+BEQ ERR ; se Z=1
+BPL ERR ; se N=0
+BVS ERR ; se V=1
+
+; JUMP COM N=0 E V=1 E Z=0, NAO DEVE DESVIAR
+INC R0
+SCC V
+CCC NZ
+BGE  ERR
+
+; Testa se alguma flag foi modificada
+BCS ERR ; se C=1
+BEQ ERR ; se Z=1
+BMI ERR ; se N=1
+BVC ERR ; se V=0
+
+; JUMP COM N,V=0 E Z=1, NAO DEVE DESVIAR
+INC R0
+CCC NV
+SCC Z
+BGE ERR
+
+; testa se alguma flag foi modificada
+BCS ERR ; se C=1
+BNE ERR ; se Z=0
+BVS ERR ; se V=1
+BMI ERR ; se N=1
+
+; JUMP COM N,V,Z=1, NAO DEVE DESVIAR
+INC R0
+SCC NVZ
+BGE ERR
+
+; testa se alguma flag foi modificada
+BCS ERR ; se C=1
+BNE ERR ; se Z=0
+BVC ERR ; se V=0
+BPL ERR ; se N=0
+
+END:
+MOV R0 T0
+MOV #0 E
+ERR:
+HLT
+ORG 1024
+E: 1
+T0: 0
