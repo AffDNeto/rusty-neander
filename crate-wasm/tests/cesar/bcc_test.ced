@@ -21,16 +21,16 @@ SCC NZCV
 BCC  ERR
 
 ; Testa se alguma flag foi modificada
-BEQ ERR ; se Z=0
+BNE ERR ; se Z=0
 BPL ERR ; se N=0
 BVC ERR ; se V=0
 BCS END ; se C=1
 JMP ERR
 
 END:
-MOV R0 T0
 MOV #0 E
 ERR:
+MOV R0 T0
 HLT
 ORG 1024
 E: 1

@@ -53,9 +53,9 @@ BMI ERR ; se N=1
 BVC ERR ; se V=0
 
 END:
-MOV R0 T0
 MOV #0 E
 ERR:
+MOV R0 T0
 HLT
 ORG 1024
 E: 1
