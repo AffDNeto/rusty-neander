@@ -1,10 +1,9 @@
 ; Testes BHI (C=0 e Z=0)
 MOV #1 R0
-CCC VN
 
 ; JUMP COM C,Z=0
 INC R0
-CCC ZC
+CCC ZCNV
 BHI NX1
 JMP ERR
 
@@ -18,19 +17,19 @@ BMI ERR ; se N=1
 ; JUMP COM C=1 E Z=0, NAO DEVE DESVIAR
 INC R0
 SCC C
-CCC Z
+CCC ZNV
 BHI  ERR
 
 ; Testa se alguma flag foi modificada
 BCC ERR ; se C=0
 BEQ ERR ; se Z=1
-BPL ERR ; se N=1
+BMI ERR ; se N=1
 BVS ERR ; se V=1
 
 ; JUMP COM C=0 E Z=1, NAO DEVE DESVIAR
 INC R0
 SCC Z
-CCC C
+CCC CNV
 BHI  ERR
 
 ; Testa se alguma flag foi modificada
@@ -42,6 +41,7 @@ BVS ERR ; se V=1
 ; JUMP COM C,Z=1, NAO DEVE DESVIAR
 INC R0
 SCC ZC
+CCC VN
 BHI ERR
 
 ; testa se alguma flag foi modificada
@@ -51,9 +51,9 @@ BVS ERR ; se V=1
 BMI ERR ; se N=1
 
 END:
-MOV R0 T0
 MOV #0 E
 ERR:
+MOV R0 T0
 HLT
 ORG 1024
 E: 1
