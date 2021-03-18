@@ -1,6 +1,7 @@
 mod neander;
 mod ahmes;
 mod ramses;
+mod cesar;
 mod common;
 use wasm_bindgen::prelude::*;
 

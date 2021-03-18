@@ -562,7 +562,7 @@ mod functional_tests {
         array.into_iter()
             .skip(4) // First 4 bytes is the file header
             .enumerate()
-            .filter(|&(i, _) | i%2 == 0) // .mem format has 0 on every odd position
+            .filter(|&(i, _) | i%2 == 0) // .mem format for 8bit memory  has 0 on every odd position
             .map(|(_, v)| v) // removes the index added by the enumerate
             .collect()
     }
