@@ -10,7 +10,7 @@ impl CesarDecoder {
     pub fn is_single_byte_instruction(&self) -> bool {
         let instruction_code  = (self.ri[0] >> 4) & 0x0F;
 
-        return if let 0x0..=0x3 | 0x7 | 0xf = instruction_code {
+        return if let 0x0..=0x2 | 0x7 | 0xf = instruction_code {
             true
         } else {
             false
@@ -69,7 +69,7 @@ impl CesarDecoder {
             2 => TwoOperandType::Add,
             3 => TwoOperandType::Sub,
             4 => TwoOperandType::Cmp,
-            5 => TwoOperandType::Add,
+            5 => TwoOperandType::And,
             6 => TwoOperandType::Or,
             _ => TwoOperandType::Nop
         }
@@ -196,6 +196,5 @@ mod decoder_test {
     fn test_decoder(instruction: [u8; 2]){
         let decoder = CesarDecoder{ri:instruction};
         println!("{:#?}", decoder.instruction());
-        assert_eq!(1, 2);
     }
 }

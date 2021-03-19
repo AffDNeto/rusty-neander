@@ -1,5 +1,4 @@
 use crate::cesar::ConditionFlags;
-use std::panic::resume_unwind;
 
 /// File with functions for operations done in the Cesar processor.
 /// Keep in mind that all of them are function that receive the operands
@@ -14,7 +13,7 @@ fn compute_flags(value:u16, flags: &mut ConditionFlags){
 }
 
 // Returns 0 and sets flags with it, C and V are set to 0
-fn clr(flags: &mut ConditionFlags ) -> u16 {
+pub(crate) fn clr(flags: &mut ConditionFlags ) -> u16 {
     flags.z = true;
     flags.n = false;
     flags.v= false;
@@ -23,7 +22,7 @@ fn clr(flags: &mut ConditionFlags ) -> u16 {
 }
 
 /// bitwise not operation, updates C to 1 e V to 0 always
-fn not(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn not(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = !a;
     compute_flags(result, flags);
     flags.c = true;
@@ -33,7 +32,7 @@ fn not(a: u16, flags: &mut ConditionFlags) -> u16 {
 }
 
 /// Updates flags based on 'a', V and C are set to 0
-fn tst(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn tst(a: u16, flags: &mut ConditionFlags) -> u16 {
     compute_flags(a, flags);
     flags.c = false;
     flags.v = false;
@@ -43,7 +42,7 @@ fn tst(a: u16, flags: &mut ConditionFlags) -> u16 {
 
 /// Rotates a bit to the right by one, completing the MSB with the carry flag
 /// N: t, Z: t, V: (N xor C) , C: lsb
-fn ror(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn ror(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = (a >> 1) | if flags.c { 0x8000 } else { 0 };
     compute_flags(result, flags);
     flags.c = (result & 1) != 0 ;
@@ -54,7 +53,7 @@ fn ror(a: u16, flags: &mut ConditionFlags) -> u16 {
 
 /// Rotates a bit to the left by one, completing the LSB with the carry flag
 /// N: t, Z: t, V: (N xor C) , C: msb
-fn rol(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn rol(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = (a << 1) | if flags.c { 1 } else { 0 };
     compute_flags(result, flags);
     flags.c = (result & 0x8000) != 0 ;
@@ -65,7 +64,7 @@ fn rol(a: u16, flags: &mut ConditionFlags) -> u16 {
 
 /// Arithmetic shifts a bit to the right by one, completing the MSB with 1
 /// N: t, Z: t, V: (N xor C) , C: lsb
-fn asr(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn asr(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = (a >> 1) | 0x8000 ;
     compute_flags(result, flags);
     flags.c = (result & 1) != 0 ;
@@ -76,8 +75,8 @@ fn asr(a: u16, flags: &mut ConditionFlags) -> u16 {
 
 /// Arithmetic shifts a bit to the left by one, completing the LSB with 0
 /// N: t, Z: t, V: (N xor C) , C: msb
-fn asl(a: u16, flags: &mut ConditionFlags) -> u16 {
-    let result = (a << 1);
+pub(crate) fn asl(a: u16, flags: &mut ConditionFlags) -> u16 {
+    let result = a << 1;
     compute_flags(result, flags);
     flags.c = (result & 0x8000) != 0 ;
     flags.v = flags.c ^ flags.n;
@@ -87,20 +86,20 @@ fn asl(a: u16, flags: &mut ConditionFlags) -> u16 {
 
 /// Returns a+b IFF the flag carry is set
 /// N: t, Z: t, V: t, C: t
-fn adc(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn adc(a: u16, flags: &mut ConditionFlags) -> u16 {
     let b = if flags.c { 1 } else { 0 };
     return add(a, b, flags);
 }
 
 /// Returns a+1
 /// N: t, Z: t, V: t, C: t
-fn inc(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn inc(a: u16, flags: &mut ConditionFlags) -> u16 {
     return add(a, 1, flags);
 }
 
 /// Returns a+b
 /// N: t, Z: t, V: t, C: t
-fn add(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
+pub(crate) fn add(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
     let s_a = a as i16;
     let s_b = b as i16;
     let (s_d, overflow) = s_a.overflowing_add(s_b);
@@ -115,14 +114,14 @@ fn add(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
 
 /// Returns 0-a = -a
 /// N: t, Z: t, V: t, C: t
-fn neg(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn neg(a: u16, flags: &mut ConditionFlags) -> u16 {
     let d = sub(0, a, flags);
     return d;
 }
 
 /// Returns a-1 IFF the flag carry is set
 /// N: t, Z: t, V: t, C: t
-fn sbc(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn sbc(a: u16, flags: &mut ConditionFlags) -> u16 {
     let b = if flags.c { 1 } else { 0 };
     let d = sub(a, b, flags);
     flags.c = !flags.c; // C flags behaviour is not the same as 'sub' per the processor description
@@ -131,13 +130,13 @@ fn sbc(a: u16, flags: &mut ConditionFlags) -> u16 {
 
 /// Returns a-1
 /// N: t, Z: t, V: t, C: not(t)
-fn dec(a: u16, flags: &mut ConditionFlags) -> u16 {
+pub(crate) fn dec(a: u16, flags: &mut ConditionFlags) -> u16 {
     return sub(a, 1, flags);
 }
 
 /// Returns a-b
 /// N: t, Z: t, V: t, C: not(t)
-fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
+pub(crate) fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
     let s_a = a as i16;
     let s_b = b as i16;
     let (s_d, overflow) = s_a.overflowing_sub(s_b);
@@ -151,7 +150,7 @@ fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
 }
 
 /// Updates the flags based on 'a' and sets V to 0, does nothing with C
-fn mov(a: u16, flags: &mut ConditionFlags ) -> u16 {
+pub(crate) fn mov(a: u16, flags: &mut ConditionFlags ) -> u16 {
     compute_flags(a, flags);
     flags.v = false;
     return a;
@@ -159,15 +158,15 @@ fn mov(a: u16, flags: &mut ConditionFlags ) -> u16 {
 
 /// Compares a with b by doing a subtraction ( b- a ) and updating the flags
 /// Nothing is returned;
-fn cmp(a:u16, b:u16, flags: &mut ConditionFlags ) {
+pub(crate) fn cmp(a:u16, b:u16, flags: &mut ConditionFlags ) {
     sub(b, a, flags);
 }
 
 /// Bitwise AND operation between a and b
 /// N: t, Z: t, V: 0, C: not changed
-fn and(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
+pub(crate) fn and(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
     let result = a & b;
-    compute_flags(d, flags);
+    compute_flags(result, flags);
     flags.v = false;
 
     return result;
@@ -175,9 +174,9 @@ fn and(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
 
 /// Bitwise OR operation between a and b
 /// N: t, Z: t, V: 0, C: not changed
-fn or(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
+pub(crate) fn or(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
     let result = a | b;
-    compute_flags(d, flags);
+    compute_flags(result, flags);
     flags.v = false;
 
     return result;

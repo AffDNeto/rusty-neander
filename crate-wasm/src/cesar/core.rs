@@ -6,6 +6,8 @@ use crate::cesar::Instruction;
 use crate::cesar::decoder::CesarDecoder;
 use crate::cesar::operations::*;
 use log::trace;
+use std::fmt;
+
 
 #[derive(Debug)]
 pub struct CesarProcessor {
@@ -34,7 +36,7 @@ impl CesarProcessor {
     /// Return value is signalizes if the program can continue to run 
     /// i.e.: last instruction was not a halt and no error happened
     fn step_code(&mut self) -> bool {
-        trace!("Running next cycle of processor");
+        trace!("Running next cycle of processor: {:?}", self);
         self.instruction_counter += 1;
         let instruction = self.get_next_instruction();
         
@@ -51,7 +53,6 @@ impl CesarProcessor {
             Instruction::TwoOperand{..} => return self.execute_two_op(instruction),
             Instruction::Halt => return false
         }
-        false
     }
 
     /// Reads byte from the address given and returns it
@@ -66,7 +67,8 @@ impl CesarProcessor {
     fn read_word(&mut self, address: u16) -> u16{
         let msb = self.read_byte(address) as u16;
         let lsb = self.read_byte(address+1) as u16;
-        let word = lsb & (msb << 8);
+        let word = lsb | (msb << 8);
+        trace!("Read word {a:#x},{a} at {b:#x},{b}", a=word, b=address);
         return word;
     }
 
@@ -91,37 +93,39 @@ impl CesarProcessor {
     fn get_address_with_mode(&mut self, register: u8, mode: AddressMode) -> u16 {
         trace!("Getting address of register {} with mode {:?}", register, mode);
         let rid = register as usize;
-        let mut address: u16;
+        let address: u16;
         match mode {
             AddressMode::Register => panic!("Tried to get an address, but the Address mode is Register"),
             AddressMode::PosInc => {
                 address = self.rx[rid];
-                self.rx[rid] += 2;
+                self.rx[rid] = self.rx[rid].wrapping_add(2);
             },
             AddressMode::PreDec => {
-                self.rx[rid] -= 2;
+                self.rx[rid] = self.rx[rid].wrapping_sub(2);
                 address = self.rx[rid];
             },
             AddressMode::Index => {
                 let index = self.read_word(self.rx[7]);
-                self.rx[7] += 2;
-                address = self.rx[rid] + index;
+                self.rx[rid] = self.rx[rid].wrapping_add(2);
+                address = self.rx[rid].wrapping_add(index);
             },
             AddressMode::Indirect => {address = self.rx[rid];},
             AddressMode::IndirectPosInc => {
                 address = self.read_word(self.rx[rid]);
-                self.rx[rid] += 2;
+                self.rx[rid] = self.rx[rid].wrapping_add(2);
+
             },
             AddressMode::IndirectPreDec => {
-                self.rx[rid] -= 2;
+                self.rx[rid] = self.rx[rid].wrapping_sub(2);
                 address = self.read_word(self.rx[rid]);
             },
             AddressMode::IndirectIndex => {
                 let index = self.read_word(self.rx[7]);
-                self.rx[7] += 2;
-                address = self.read_word(self.rx[rid]);
+                self.rx[rid] = self.rx[rid].wrapping_add(2);
+                address = self.read_word(self.rx[rid].wrapping_add(index));
             }
         };
+        trace!("Returning address {a:},{a:#x}", a=address);
         return address;
     }
     /// Reads a word(16bits) from memory pointed by the register and the mode
@@ -141,7 +145,7 @@ impl CesarProcessor {
             },
         }
 
-        trace!("Word, {a:#x}{a}, read at address {b:#x}{b}", a=word, b=address);
+        trace!("Word: {a:#x}, {a}, read at address {b:#x}, {b}", a=word, b=address);
         return (word, Some(address));
     }
     
@@ -150,13 +154,18 @@ impl CesarProcessor {
     fn get_next_instruction(&mut self) -> Instruction {
         trace!("Searching next instruction: {a:#04x},{a}", a=self.rx[7]);
         self.decoder.ri[0] = self.read_byte(self.rx[7]);
-        self.rx[7] += 1;
+        // Case the program pointer overflows, halt the program
+        let new_pc = self.rx[7].overflowing_add(1);
+        if new_pc.1 { return Instruction::Halt } else { self.rx[7] = new_pc.0 }
         if self.decoder.is_single_byte_instruction() {
             //Cleans second byte of the decoder
             self.decoder.ri[1] = 0;
         }else{
             self.decoder.ri[1] = self.read_byte(self.rx[7]);
-            self.rx[7] += 1;
+
+            // Case the program pointer overflows, halt the program
+            let new_pc = self.rx[7].overflowing_add(1);
+            if new_pc.1 { return Instruction::Halt } else { self.rx[7] = new_pc.0 }
         }
 
         self.decoder.instruction()
@@ -286,7 +295,7 @@ impl CesarProcessor {
             let (value, address) = self.read_word_with_mode(rx, mode);
             let result: u16;
             match kind {
-                /// Test instruction doesn't write anything
+                // Test instruction doesn't write anything
                 OneOperandType::Tst => { tst(value, &mut self.flags); return true }
                 OneOperandType::Clr => { result = clr(&mut self.flags) }
                 OneOperandType::Not => { result = not(value, &mut self.flags) }
@@ -351,12 +360,21 @@ impl CesarProcessor {
     }
 }
 
-#[derive(Debug)]
 pub struct MemoryBank {
     pub rem: u16,
     pub rdm: u8,
     pub access_count: usize,
     bank: [u8; 65536]
+}
+
+impl fmt::Debug for MemoryBank {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("MemoryBank")
+            .field("rem", &self.rem)
+            .field("rdm", &self.rdm)
+            .field("access_count", &self.access_count)
+            .finish()
+    }
 }
 impl Default for MemoryBank{
     fn default() -> Self { 
@@ -417,12 +435,12 @@ mod functional_tests {
         let diff =  Differ::new(&a, &b);
         for span in diff.spans() {
             match span.tag {
-                Tag::Replace => {
-                    println!("Difference found from {} to {}", span.b_start, span.b_end);
-                    //println!("Want:{:?}", &b[span.b_start..span.b_end]);
-                    //println!("Got :{:?}", &a[span.b_start..span.b_end]);
-                },
-                _ => ()
+                Tag::Equal => (),
+                _ => {
+                    println!("{} found from {} to {}", span.tag, span.b_start, span.b_end);
+                    println!("Want:{:?}", &b[span.b_start..span.b_end]);
+                    println!("Got :{:?}", &a[span.b_start..span.b_end]);
+                }
             }
         }
     }
@@ -482,6 +500,8 @@ mod functional_tests {
         case::tst("tst_test.mem")
     )]
     fn cesar_test(filename: impl AsRef<str>){
+        init_logger();
+        let _ = env_logger::builder().is_test(true).try_init();
         let mut processor = CesarProcessor{..Default::default()};
         let tests_path = cesar_test_path();
         let mut result_file = "result.".to_owned();
@@ -497,10 +517,20 @@ mod functional_tests {
         }
         //println!("{:?}", processor);
 
-        // compare_mem(&processor.memory.bank , &result);
-        println!("What changed");
-        // compare_mem(&processor.memory.bank , &start);
-        // assert!(processor.memory.bank == result);
+        compare_mem(&processor.memory.bank , &result);
+        // println!("What changed");
+        //compare_mem(&processor.memory.bank , &start);
+        assert!(processor.memory.bank == result);
+    }
+
+    fn init_logger() {
+        let _ = env_logger::builder()
+            // Include all events in tests
+            .filter_level(log::LevelFilter::max())
+            // Ensure events are captured by `cargo test`
+            .is_test(true)
+            // Ignore errors initializing the logger if tests race to configure it
+            .try_init();
     }
 }
 

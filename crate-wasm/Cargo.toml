@@ -13,3 +13,10 @@ serde = { version = "1.0", features = ["derive"]}
 wasm-bindgen = { version = "0.2.69", features = ["serde-serialize"]}
 rstest = "0.6.4"
 differ = "1"
+cfg-if = "0.1"
+log = "0.4"
+env_logger = "0.8.3"
+console_log = { version = "0.2", optional = true }
+
+[features]
+default = ["console_log"]
