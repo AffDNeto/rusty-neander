@@ -5,11 +5,15 @@ use std::panic::resume_unwind;
 /// Keep in mind that all of them are function that receive the operands
 /// and a processor flags reference returning the result and changing the flags properly
 
+/// Compute flags based only on a value
+/// set Z if the value is 0, clears otherwise
+/// set N if the value is lower than 0, clears otherwise
 fn compute_flags(value:u16, flags: &mut ConditionFlags){
     flags.n = (value & 0x8000) != 0;
     flags.z = value == 0;
 }
 
+// Returns 0 and sets flags with it, C and V are set to 0
 fn clr(flags: &mut ConditionFlags ) -> u16 {
     flags.z = true;
     flags.n = false;
@@ -18,6 +22,7 @@ fn clr(flags: &mut ConditionFlags ) -> u16 {
     return 0;
 }
 
+/// bitwise not operation, updates C to 1 e V to 0 always
 fn not(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = !a;
     compute_flags(result, flags);
@@ -27,6 +32,7 @@ fn not(a: u16, flags: &mut ConditionFlags) -> u16 {
     return result;
 }
 
+/// Updates flags based on 'a', V and C are set to 0
 fn tst(a: u16, flags: &mut ConditionFlags) -> u16 {
     compute_flags(a, flags);
     flags.c = false;
@@ -142,4 +148,37 @@ fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
     flags.c = !(b > a);
 
     return d
+}
+
+/// Updates the flags based on 'a' and sets V to 0, does nothing with C
+fn mov(a: u16, flags: &mut ConditionFlags ) -> u16 {
+    compute_flags(a, flags);
+    flags.v = false;
+    return a;
+}
+
+/// Compares a with b by doing a subtraction ( b- a ) and updating the flags
+/// Nothing is returned;
+fn cmp(a:u16, b:u16, flags: &mut ConditionFlags ) {
+    sub(b, a, flags);
+}
+
+/// Bitwise AND operation between a and b
+/// N: t, Z: t, V: 0, C: not changed
+fn and(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
+    let result = a & b;
+    compute_flags(d, flags);
+    flags.v = false;
+
+    return result;
+}
+
+/// Bitwise OR operation between a and b
+/// N: t, Z: t, V: 0, C: not changed
+fn or(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
+    let result = a | b;
+    compute_flags(d, flags);
+    flags.v = false;
+
+    return result;
 }
