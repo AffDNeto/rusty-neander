@@ -1,86 +1,4 @@
-
-
-#[derive(Debug)]
-pub enum BranchType {
-    Br,
-    Bne,
-    Beq,
-    Bpl,
-    Bmi,
-    Bvc,
-    Bvs,
-    Bcc,
-    Bcs,
-    Bge,
-    Blt,
-    Bgt,
-    Ble,
-    Bhi,
-    Bls,
-    Nop
-}
-
-#[derive(Debug)]
-pub enum OneOperandType {
-    Clr,
-    Not,
-    Inc,
-    Dec,
-    Neg,
-    Tst,
-    Ror,
-    Rol,
-    Asr,
-    Asl,
-    Adc,
-    Sbc,
-    Nop
-}
-
-#[derive(Debug)]
-pub enum TwoOperandType{
-    Mov,
-    Add,
-    Sub,
-    Cmp,
-    And,
-    Or,
-    Nop
-}
-
-#[derive(Debug)]
-pub enum AddressMode {
-    Register,
-    PosInc,
-    PreDec,
-    Index,
-    Indirect,
-    IndirectPosInc,
-    IndirectPreDec,
-    IndirectIndex
-}
-
-#[derive(Debug)]
-pub struct ConditionFlags{
-    pub n:bool,
-    pub z:bool,
-    pub v:bool,
-    pub c:bool
-}
-#[derive(Debug)]
-pub enum Instruction {
-    Nop,
-    SetCondition(ConditionFlags),
-    ClearCondition(ConditionFlags),
-    Jump{ rx:u8, mode:AddressMode},
-    Branch{ displacement:u8, kind:BranchType},
-    Loop{ rx:u8, displacement:u8},
-    BranchSubroutine{ r1:u8, r2:u8, mode:AddressMode},
-    ReturnSubroutine{ rx:u8 },
-    OneOperand{ rx:u8, mode:AddressMode, kind:OneOperandType},
-    TwoOperand{ r1:u8, r2:u8, mode1:AddressMode, mode2:AddressMode, kind:TwoOperandType},
-    Halt
-}
+use crate::cesar::{AddressMode, BranchType, ConditionFlags, Instruction, OneOperandType, TwoOperandType};
 
 #[derive(Debug)]
 pub struct CesarDecoder {
@@ -88,14 +6,14 @@ pub struct CesarDecoder {
 }
 
 impl CesarDecoder {
-    /// Tells if the instruction ocupies one byte based on the first one
+    /// Tells if the instruction occupies one byte based on the first one
     pub fn is_single_byte_instruction(&self) -> bool {
         let instruction_code  = (self.ri[0] >> 4) & 0x0F;
 
-        if let 0x0..=0x3 | 0x7 | 0xf = instruction_code {
-            return true
-        }else{
-            return false
+        return if let 0x0..=0x3 | 0x7 | 0xf = instruction_code {
+            true
+        } else {
+            false
         }
     }
 
@@ -187,7 +105,7 @@ impl CesarDecoder {
             5 => AddressMode::IndirectPosInc,
             6 => AddressMode::IndirectPreDec,
             7 => AddressMode::IndirectIndex,
-            _ => panic!("Invalid adress mode {}", mode)
+            _ => panic!("Invalid address mode {}", mode)
         }
     }
 
@@ -242,31 +160,32 @@ impl CesarDecoder {
     fn branch_type(&self) -> BranchType {
         let branch_code = (self.ri[0] & 0x0F) >> 4 ;
 
-        match branch_code {
-            0 => return BranchType::Br,
-            1 => return BranchType::Bne,
-            2 => return BranchType::Beq,
-            3 => return BranchType::Bpl,
-            4 => return BranchType::Bmi,
-            5 => return BranchType::Bvc,
-            6 => return BranchType::Bvs,
-            7 => return BranchType::Bcc,
-            8 => return BranchType::Bcs,
-            9 => return BranchType::Bge,
-            10 => return BranchType::Blt,
-            11 => return BranchType::Bgt,
-            12 => return BranchType::Ble,
-            13 => return BranchType::Bhi,
-            14 => return BranchType::Bls,
-            _ => return BranchType::Nop,
+        return match branch_code {
+            0 => BranchType::Br,
+            1 => BranchType::Bne,
+            2 => BranchType::Beq,
+            3 => BranchType::Bpl,
+            4 => BranchType::Bmi,
+            5 => BranchType::Bvc,
+            6 => BranchType::Bvs,
+            7 => BranchType::Bcc,
+            8 => BranchType::Bcs,
+            9 => BranchType::Bge,
+            10 => BranchType::Blt,
+            11 => BranchType::Bgt,
+            12 => BranchType::Ble,
+            13 => BranchType::Bhi,
+            14 => BranchType::Bls,
+            _ => BranchType::Nop,
         }
     }
 }
 
 
 #[cfg(test)]
-mod DecoderTest{
+mod decoder_test {
     use rstest::*;
+
     use super::*;
 
     #[rstest(instruction,

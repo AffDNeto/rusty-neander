@@ -1,8 +1,8 @@
 
-use crate::cesar::decoder::BranchType;
-use crate::cesar::decoder::AddressMode;
-use crate::cesar::decoder::ConditionFlags;
-use crate::cesar::decoder::Instruction;
+use crate::cesar::BranchType;
+use crate::cesar::AddressMode;
+use crate::cesar::ConditionFlags;
+use crate::cesar::Instruction;
 use crate::cesar::decoder::CesarDecoder;
 
 #[derive(Debug)]
