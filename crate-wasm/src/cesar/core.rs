@@ -313,7 +313,7 @@ impl CesarProcessor {
             }
 
             if let Some(a) = address {
-                self.write_word(result, a);
+                self.write_word(a, result);
             }else{
                 self.rx[rx as usize] = result;
             }
