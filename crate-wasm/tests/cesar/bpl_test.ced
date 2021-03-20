@@ -1,5 +1,5 @@
 ; Testes BPL (N=0)
-MOV #1 R0
+CLR R0
 
 ; JUMP COM FLAG DESLIGADA
 INC R0

@@ -516,9 +516,11 @@ mod functional_tests {
         let _ = env_logger::builder().is_test(true).try_init();
         let mut processor = CesarProcessor{..Default::default()};
         let tests_path = cesar_test_path();
-        let mut result_file = "result.".to_owned();
-        result_file.push_str(filename.as_ref());
-        
+        let result_file = format!(
+            "{}.result.mem",
+            filename.as_ref().strip_suffix(".mem").unwrap()
+        );
+
         let start = read(&tests_path.join(filename.as_ref()));
         let result = read(&tests_path.join(&result_file));
         processor.memory.bank  = start;

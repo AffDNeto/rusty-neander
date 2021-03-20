@@ -1,5 +1,5 @@
 ; Testes BLT (N<>V)
-MOV #1 R0
+CLR R0
 
 ; JUMP COM N=1 V=0
 INC R0

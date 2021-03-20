@@ -1,5 +1,5 @@
 ; Testes BLE (N<>V ou Z=1)
-MOV #1 R0
+CLR R0
 CCC C
 
 ; JUMP COM N=1 V,Z=0

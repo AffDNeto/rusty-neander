@@ -1,5 +1,5 @@
 ; Testes BNE (Z=1)
-MOV #1 R0
+CLR R0
 
 ; JUMP COM FLAG LIGADAS
 INC R0

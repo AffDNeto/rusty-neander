@@ -1,5 +1,5 @@
 ; Testes BGE (N=V)
-MOV #1 R0
+CLR R0
 CCC ZC
 
 ; JUMP COM N,V=0
