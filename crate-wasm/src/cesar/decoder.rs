@@ -1,4 +1,5 @@
 use crate::cesar::{AddressMode, BranchType, ConditionFlags, Instruction, OneOperandType, TwoOperandType};
+use log::trace;
 
 #[derive(Debug)]
 pub struct CesarDecoder {
@@ -158,9 +159,8 @@ impl CesarDecoder {
     }
 
     fn branch_type(&self) -> BranchType {
-        let branch_code = (self.ri[0] & 0x0F) >> 4 ;
-
-        return match branch_code {
+        let branch_code = self.ri[0] & 0x0F;
+        let kind = match branch_code {
             0 => BranchType::Br,
             1 => BranchType::Bne,
             2 => BranchType::Beq,
@@ -177,7 +177,9 @@ impl CesarDecoder {
             13 => BranchType::Bhi,
             14 => BranchType::Bls,
             _ => BranchType::Nop,
-        }
+        };
+        trace!("Decoding branch kind for {:#X}:{:#X} = {:?}", self.ri[0], self.ri[1], kind);
+        return kind;
     }
 }
 

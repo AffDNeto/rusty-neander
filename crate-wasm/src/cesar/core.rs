@@ -106,7 +106,7 @@ impl CesarProcessor {
             },
             AddressMode::Index => {
                 let index = self.read_word(self.rx[7]);
-                self.rx[rid] = self.rx[rid].wrapping_add(2);
+                self.rx[7] = self.rx[7].wrapping_add(2);
                 address = self.rx[rid].wrapping_add(index);
             },
             AddressMode::Indirect => {address = self.rx[rid];},
@@ -121,7 +121,8 @@ impl CesarProcessor {
             },
             AddressMode::IndirectIndex => {
                 let index = self.read_word(self.rx[7]);
-                self.rx[rid] = self.rx[rid].wrapping_add(2);
+                self.rx[7] = self.rx[7].wrapping_add(2);
+                trace!("Summing {} with {} = {}", self.rx[rid], index, self.rx[rid].wrapping_add(index));
                 address = self.read_word(self.rx[rid].wrapping_add(index));
             }
         };
@@ -204,7 +205,7 @@ impl CesarProcessor {
     fn execute_jump(&mut self, instruction: Instruction) -> bool {
         trace!("Running jump instruction: {:?}", instruction);
         if let Instruction::Jump{rx, mode} = instruction {
-            let (new_pc, _) = self.read_word_with_mode(rx, mode);
+            let new_pc = self.get_address_with_mode(rx, mode);
             self.rx[7] = new_pc;
             return true;
         }else{
@@ -328,7 +329,7 @@ impl CesarProcessor {
         if let Instruction::TwoOperand {r1, r2, mode1, mode2, kind} = instruction {
             let (src_value, _) = self.read_word_with_mode(r1, mode1);
             if let TwoOperandType::Mov = kind {
-                mov(src_value, &mut self.flags);
+                mov(src_value, &mut self.flags); // update flags with value being moved
                 if let AddressMode::Register = mode2 {
                     self.rx[r2 as usize] = src_value;
                 }else{
@@ -437,9 +438,12 @@ mod functional_tests {
             match span.tag {
                 Tag::Equal => (),
                 _ => {
+                    let end = if (span.b_end-span.b_start) > 100 {
+                        span.b_start + 100
+                    }else if span.b_end == span.b_start { span.b_start + 1 } else { span.b_end };
                     println!("{} found from {} to {}", span.tag, span.b_start, span.b_end);
-                    println!("Want:{:?}", &b[span.b_start..span.b_end]);
-                    println!("Got :{:?}", &a[span.b_start..span.b_end]);
+                    println!("Want:{:?}", &b[span.b_start..end]);
+                    println!("Got :{:?}", &a[span.b_start..end]);
                 }
             }
         }

@@ -1,4 +1,5 @@
 use crate::cesar::ConditionFlags;
+use log::trace;
 
 /// File with functions for operations done in the Cesar processor.
 /// Keep in mind that all of them are function that receive the operands
@@ -151,6 +152,7 @@ pub(crate) fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
 
 /// Updates the flags based on 'a' and sets V to 0, does nothing with C
 pub(crate) fn mov(a: u16, flags: &mut ConditionFlags ) -> u16 {
+    trace!("Moving value {}", a);
     compute_flags(a, flags);
     flags.v = false;
     return a;
