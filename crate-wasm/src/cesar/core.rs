@@ -341,10 +341,18 @@ impl CesarProcessor {
             let (dst_value, dst_address) = self.read_word_with_mode(r2, mode2);
             let result;
             match kind {
-                TwoOperandType::Add => { result = add(src_value, dst_value, &mut self.flags) }
-                TwoOperandType::Sub => { result = sub(src_value, dst_value, &mut self.flags) }
-                TwoOperandType::And => { result = and(src_value, dst_value, &mut self.flags) }
-                TwoOperandType::Or => { result = or(src_value, dst_value, &mut self.flags) }
+                TwoOperandType::Add => {
+                    result = add(src_value, dst_value, &mut self.flags)
+                }
+                TwoOperandType::Sub => {
+                    result = sub(dst_value, src_value, &mut self.flags)
+                }
+                TwoOperandType::And => {
+                    result = and(src_value, dst_value, &mut self.flags)
+                }
+                TwoOperandType::Or => {
+                    result = or(src_value, dst_value, &mut self.flags)
+                }
                 TwoOperandType::Cmp => { cmp(src_value, dst_value, &mut self.flags); return true }
                 _ => { return true }
             }
@@ -354,7 +362,7 @@ impl CesarProcessor {
             }else {
                 self.rx[r2 as usize] = result;
             }
-            return false;
+            return true;
         }else{
             panic!("Tried to execute _ but received {:?}", instruction)
         }
@@ -519,8 +527,8 @@ mod functional_tests {
             //println!("{:?}", processor);
             if !processor.step_code() { break; }
         }
-        //println!("{:?}", processor);
 
+        println!("{:?}", processor);
         compare_mem(&processor.memory.bank , &result);
         // println!("What changed");
         //compare_mem(&processor.memory.bank , &start);

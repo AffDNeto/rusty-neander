@@ -138,6 +138,7 @@ pub(crate) fn dec(a: u16, flags: &mut ConditionFlags) -> u16 {
 /// Returns a-b
 /// N: t, Z: t, V: t, C: not(t)
 pub(crate) fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
+    trace!("Subtracting {} from {}", b, a);
     let s_a = a as i16;
     let s_b = b as i16;
     let (s_d, overflow) = s_a.overflowing_sub(s_b);
@@ -145,7 +146,7 @@ pub(crate) fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
 
     compute_flags(d, flags);
     flags.v = overflow;
-    flags.c = !(b > a);
+    flags.c = (d >= a) & (d >= b);
 
     return d
 }
