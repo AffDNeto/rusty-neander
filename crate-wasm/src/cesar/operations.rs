@@ -46,7 +46,7 @@ pub(crate) fn tst(a: u16, flags: &mut ConditionFlags) -> u16 {
 pub(crate) fn ror(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = (a >> 1) | if flags.c { 0x8000 } else { 0 };
     compute_flags(result, flags);
-    flags.c = (result & 1) != 0 ;
+    flags.c = (a & 1) != 0 ;
     flags.v = flags.c ^ flags.n;
 
     return result;
@@ -57,7 +57,7 @@ pub(crate) fn ror(a: u16, flags: &mut ConditionFlags) -> u16 {
 pub(crate) fn rol(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = (a << 1) | if flags.c { 1 } else { 0 };
     compute_flags(result, flags);
-    flags.c = (result & 0x8000) != 0 ;
+    flags.c = (a & 0x8000) != 0 ;
     flags.v = flags.c ^ flags.n;
 
     return result;
@@ -66,9 +66,9 @@ pub(crate) fn rol(a: u16, flags: &mut ConditionFlags) -> u16 {
 /// Arithmetic shifts a bit to the right by one, completing the MSB with 1
 /// N: t, Z: t, V: (N xor C) , C: lsb
 pub(crate) fn asr(a: u16, flags: &mut ConditionFlags) -> u16 {
-    let result = (a >> 1) | 0x8000 ;
+    let result = (a >> 1) | if a > 0x8000 { 0x8000 } else { 0 };
     compute_flags(result, flags);
-    flags.c = (result & 1) != 0 ;
+    flags.c = (a & 1) != 0 ;
     flags.v = flags.c ^ flags.n;
 
     return result;
@@ -79,7 +79,7 @@ pub(crate) fn asr(a: u16, flags: &mut ConditionFlags) -> u16 {
 pub(crate) fn asl(a: u16, flags: &mut ConditionFlags) -> u16 {
     let result = a << 1;
     compute_flags(result, flags);
-    flags.c = (result & 0x8000) != 0 ;
+    flags.c = (a & 0x8000) != 0 ;
     flags.v = flags.c ^ flags.n;
 
     return result;
@@ -116,7 +116,8 @@ pub(crate) fn add(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
 /// Returns 0-a = -a
 /// N: t, Z: t, V: t, C: t
 pub(crate) fn neg(a: u16, flags: &mut ConditionFlags) -> u16 {
-    let d = sub(0, a, flags);
+    let d = add(1, !a, flags);
+    flags.c = !flags.c;
     return d;
 }
 
@@ -143,7 +144,7 @@ pub(crate) fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
     let s_b = b as i16;
     let (s_d, overflow) = s_a.overflowing_sub(s_b);
     let d = s_d as u16;
-
+    trace!("Sub result {d:#X}:{d}, {sd:#X}:{sd}", d=d,sd=s_d);
     compute_flags(d, flags);
     flags.v = overflow;
     flags.c = (d >= a) & (d >= b);
@@ -162,7 +163,7 @@ pub(crate) fn mov(a: u16, flags: &mut ConditionFlags ) -> u16 {
 /// Compares a with b by doing a subtraction ( b- a ) and updating the flags
 /// Nothing is returned;
 pub(crate) fn cmp(a:u16, b:u16, flags: &mut ConditionFlags ) {
-    sub(b, a, flags);
+    sub(a, b, flags);
 }
 
 /// Bitwise AND operation between a and b

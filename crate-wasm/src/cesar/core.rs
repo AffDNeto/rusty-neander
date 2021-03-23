@@ -252,9 +252,9 @@ impl CesarProcessor {
             self.rx[rx as usize] -= 1;
             if self.rx[rx as usize] != 0 {
                 // Multiple conversions needed to correctly calculate the new PC with two complement
-                self.rx[7] = ((self.rx[7] as i16 ) + (displacement as i8) as i16) as u16;
+                self.rx[7] = ((self.rx[7] as i16 ) - (displacement as i8) as i16) as u16;
             }
-            return false;
+            return true;
         }else{
             panic!("Tried to execute _ but received {:?}", instruction)
         }
@@ -263,11 +263,10 @@ impl CesarProcessor {
     fn execute_jsr(&mut self, instruction: Instruction) -> bool {
         trace!("Running JSR instruction: {:?}", instruction);
         if let Instruction::BranchSubroutine{r1, r2, mode} = instruction {
-            let (temp, address) = self.read_word_with_mode(r2, mode);
-            
             // If the address mode is Register this instruction is ignored.
-            if let None = address { return true }
-            
+            if let AddressMode::Register = mode { return true }
+
+            let temp = self.get_address_with_mode(r2, mode);
             // Push value to stack of the program using r6 as the stack pointer
             let stack_top = self.get_address_with_mode(6, AddressMode::PreDec);
             self.write_word(stack_top, self.rx[r1 as usize]);
@@ -543,6 +542,7 @@ mod functional_tests {
             .filter_level(log::LevelFilter::max())
             // Ensure events are captured by `cargo test`
             .is_test(true)
+            .format_timestamp_nanos()
             // Ignore errors initializing the logger if tests race to configure it
             .try_init();
     }

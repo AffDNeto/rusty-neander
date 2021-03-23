@@ -55,26 +55,30 @@ BNE ERR
 ; MODOS DE ENDERECAMENTO
 ;PRE DEC
 MOV #T R0
-CLR -(R0)   ; escreve em T_PRE_DEC
+NEG -(R0)   ; escreve em T_PRE_DEC
 ;POS INC
-CLR #0   ; mesmo que INC (R7)+
+NEG #0   ; mesmo que INC (R7)+
 ;INDIRETO
 MOV #T R0
-CLR (R0)    ; escreve em T
+NEG (R0)    ; escreve em T
 ;INDEXADO
-CLR 2(R0)   ; escreve em T_IDX
+NEG 2(R0)   ; escreve em T_IDX
 ;IND POS INC
 MOV #TI_POS_INC TMP
 MOV #TMP R0
-CLR ((R0)+)
+NEG ((R0)+)
 ;IND PRE DEC
 MOV #TI_PRE_DEC TMP
-CLR (-(R0)) ; escreve em TI_PRE_DEC
+MOV #TMP R0
+INC R0
+INC R0
+NEG (-(R0)) ; escreve em TI_PRE_DEC
 ;IND INDEXADO
-MOV #TI_IDX R0
+MOV #TI_IDX TMP
+MOV #TMP R0
 INC R0
 INC R0
-CLR (-2(R0))   ; escreve em TI_IDX
+NEG (-2(R0))   ; escreve em TI_IDX
 
 
 JMP END
