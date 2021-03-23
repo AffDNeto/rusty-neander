@@ -1,0 +1,12 @@
+; Testes Visor
+
+MOV la r1
+MOV R1 A
+MOV A R2
+HLT
+
+ORG 1024
+LA: h4141
+
+ORG 65500
+A:

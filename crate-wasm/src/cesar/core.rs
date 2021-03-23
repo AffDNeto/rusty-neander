@@ -65,8 +65,17 @@ impl CesarProcessor {
     
     /// Reads a word(16bits) from the address given and return it
     fn read_word(&mut self, address: u16) -> u16{
-        let msb = self.read_byte(address) as u16;
-        let lsb = self.read_byte(address+1) as u16;
+        let mut msb = self.read_byte(address) as u16;
+        let lsb: u16;
+
+        if address < 65500 {
+            lsb = self.read_byte(address+1) as u16;
+        } else {
+            // Reading from visor memory range
+            msb = 0;
+            lsb = self.read_byte(address) as u16;
+        }
+
         let word = lsb | (msb << 8);
         trace!("Read word {a:#x},{a} at {b:#x},{b}", a=word, b=address);
         return word;
@@ -78,13 +87,23 @@ impl CesarProcessor {
         trace!("Writing word {a:#x},{a} in address {b:#x},{b}", a=value, b=address);
         let msb = ( value >> 8 ) as u8;
         let lsb = value as u8; // Most significant bit will just be truncated
-        self.memory.rem = address;
-        self.memory.rdm = msb;
-        self.memory.write();
-        
-        self.memory.rem = address+1;
-        self.memory.rdm = lsb;
-        self.memory.write();
+
+        // When writing in the visor memory range, the msb is not written.
+        // The lsb is written in it's place
+        if address >= 65500 {
+            self.memory.rem = address;
+            self.memory.rdm = lsb;
+            self.memory.write();
+        }else{
+            self.memory.rem = address;
+            self.memory.rdm = msb;
+            self.memory.write();
+
+            self.memory.rem = address+1;
+            self.memory.rdm = lsb;
+            self.memory.write();
+        }
+
     }
 
     /// Decodes the address to be read/writen from memory 
@@ -508,7 +527,8 @@ mod functional_tests {
         case::scc("scc_test.mem"),
         case::sob("sob_test.mem"),
         case::sub("sub_test.mem"),
-        case::tst("tst_test.mem")
+        case::tst("tst_test.mem"),
+        case::visor("visor_test.mem")
     )]
     fn cesar_test(filename: impl AsRef<str>){
         init_logger();
