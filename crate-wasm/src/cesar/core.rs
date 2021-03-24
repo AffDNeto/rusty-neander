@@ -18,6 +18,21 @@ pub struct CesarProcessor {
     pub flags: ConditionFlags
 }
 
+impl CesarProcessor {
+    fn keyboard_interrupt(&mut self, letter: u8) {
+        let key_flag = self.read_byte(0xFFDA);
+        if key_flag != 0x80 {
+            self.write_byte(0xFFDA, 0x80);
+            self.write_byte(0xFFDB, letter);
+        }
+    }
+    fn write_byte(&mut self, address: u16, value: u8) {
+        self.memory.rem = address;
+        self.memory.rdm = value;
+        self.memory.write();
+    }
+}
+
 impl Default for CesarProcessor {
     fn default() -> Self {
         CesarProcessor {
@@ -62,13 +77,13 @@ impl CesarProcessor {
         trace!("Read byte {a:#x},{a} in address {b:#x},{b}", a=self.memory.rdm, b=address);
         return self.memory.rdm;
     }
-    
+
     /// Reads a word(16bits) from the address given and return it
     fn read_word(&mut self, address: u16) -> u16{
         let mut msb = self.read_byte(address) as u16;
         let lsb: u16;
 
-        if address < 65500 {
+        if address < 0xFFDA {
             lsb = self.read_byte(address+1) as u16;
         } else {
             // Reading from visor memory range
@@ -81,7 +96,7 @@ impl CesarProcessor {
         return word;
     }
 
-    /// Writes a word(16bit) on the address given, 
+    /// Writes a word(16bit) on the address given,
     /// split the word in bytes properly before writing it
     fn write_word(&mut self, address: u16, value: u16) {
         trace!("Writing word {a:#x},{a} in address {b:#x},{b}", a=value, b=address);
@@ -90,18 +105,11 @@ impl CesarProcessor {
 
         // When writing in the visor memory range, the msb is not written.
         // The lsb is written in it's place
-        if address >= 65500 {
-            self.memory.rem = address;
-            self.memory.rdm = lsb;
-            self.memory.write();
+        if address >= 0xFFDA {
+            self.write_byte(address, lsb);
         }else{
-            self.memory.rem = address;
-            self.memory.rdm = msb;
-            self.memory.write();
-
-            self.memory.rem = address+1;
-            self.memory.rdm = lsb;
-            self.memory.write();
+            self.write_byte(address, msb);
+            self.write_byte(address+1, lsb);
         }
 
     }
@@ -433,6 +441,8 @@ mod functional_tests {
     use std::path::{Path, PathBuf};    
     use super::*;
     use rstest::*;
+    use std::time::SystemTime;
+
     const CARGO_ROOT: &str = env!("CARGO_MANIFEST_DIR");
 
     fn cesar_test_path() -> PathBuf {
@@ -532,7 +542,6 @@ mod functional_tests {
     )]
     fn cesar_test(filename: impl AsRef<str>){
         init_logger();
-        let _ = env_logger::builder().is_test(true).try_init();
         let mut processor = CesarProcessor{..Default::default()};
         let tests_path = cesar_test_path();
         let result_file = format!(
@@ -544,6 +553,42 @@ mod functional_tests {
         let result = read(&tests_path.join(&result_file));
         processor.memory.bank  = start;
 
+        let start = SystemTime::now();
+        for _ in 1..200 {
+            //println!("{:?}", processor);
+            if !processor.step_code() { break; }
+        }
+        let time = start.elapsed().unwrap();
+
+
+        println!("{:?}", processor);
+        println!("Total time: {} ms", time.as_millis());
+        // println!("Mean time per instruction: {} ms/i", time.as_millis()/processor.instruction_counter);
+        println!("Mean frequency: {} i/s", processor.instruction_counter as f64 / time.as_secs_f64());
+
+        compare_mem(&processor.memory.bank , &result);
+        // println!("What changed");
+        //compare_mem(&processor.memory.bank , &start);
+        assert!(processor.memory.bank == result);
+    }
+
+    #[test]
+    fn cesar_keyboard_test(){
+        init_logger();
+        let mut processor = CesarProcessor{..Default::default()};
+        let tests_path = cesar_test_path();
+        let filename = "keyboard_test.mem".to_owned();
+        let result_file = "keyboard_test.result.mem".to_owned();
+
+        let start = read(&tests_path.join(&filename));
+        let result = read(&tests_path.join(&result_file));
+        processor.memory.bank  = start;
+
+        for _ in 1..50 {
+            //println!("{:?}", processor);
+            if !processor.step_code() { assert!(false) }
+        }
+        processor.keyboard_interrupt(0x41); // Inputs 'A' on the processor
         for _ in 1..200 {
             //println!("{:?}", processor);
             if !processor.step_code() { break; }
@@ -551,11 +596,8 @@ mod functional_tests {
 
         println!("{:?}", processor);
         compare_mem(&processor.memory.bank , &result);
-        // println!("What changed");
-        //compare_mem(&processor.memory.bank , &start);
         assert!(processor.memory.bank == result);
     }
-
     fn init_logger() {
         let _ = env_logger::builder()
             // Include all events in tests

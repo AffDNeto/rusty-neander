@@ -1,0 +1,33 @@
+; Testes Teclado
+
+MOV #V_inicio R0
+MOV #STACK R6
+MOV #0 R2
+SUB R0 R2
+
+WAIT_KEY:
+CMP HAS_KEY #H80
+BNE WAIT_KEY
+
+MOV KEY R1
+
+FILL:
+MOV R1 (R0)	; Apenas o lsb deve ser movido para esse range de memoria
+MOV (R0) -(R6)
+INC R1
+INC R0
+SOB R2,FILL
+
+HLT
+
+ORG 1024
+STACK:
+A: hFF41 ; caractere ascii 'A' no lsb mais lixo no msb
+
+ORG 65498
+HAS_KEY: DB 0
+KEY: DB 0
+ORG 65500
+V_inicio:
+ORG 65535
+V_fim:
