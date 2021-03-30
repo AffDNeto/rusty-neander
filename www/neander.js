@@ -1,6 +1,26 @@
 'use strict';
 
 require('./neander.html');
+require('./style.css');
+require('bootstrap');
+require('jquery');
+
+const rust = import('../crate-wasm/pkg');
+
+rust
+    .then(m => { m.greet('World!'); window.rustModule = m; load() } )
+    .catch(console.error);
+
+function load() {
+  window.mem = MemTableControler;
+  window.reg = RegisterController;
+  window.view = NeanderViewModel;
+
+  window.NeanderView = new NeanderViewModel(
+      document.getElementById('neanderUi'),
+      new window.rustModule.NeanderJS()
+  );
+}
 
 export class MemTableControler {
   constructor(table, size) {
@@ -11,7 +31,6 @@ export class MemTableControler {
   addCell(where, what) {
     var text_node = document.createTextNode(what);
     var cell = document.createElement("td");
-  
     cell.appendChild(text_node);
     where.appendChild(cell);
   }

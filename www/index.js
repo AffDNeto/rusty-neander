@@ -4,6 +4,8 @@
 require('./style.css');
 require('./neander.js');
 require('./ahmes.js');
+require('./nav-bar.html');
+require('bootstrap');
 
 import { AhmesView } from "./ahmes";
 import { 

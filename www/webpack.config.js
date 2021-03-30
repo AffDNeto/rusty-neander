@@ -6,16 +6,37 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
+package = require('./package.json');
+
 module.exports = {
-    entry: path.resolve(__dirname, 'index.js'),
+    entry: {
+        app: path.resolve(__dirname, 'index.js'),
+        vendor: Object.keys(package.dependencies),
+        neander: path.resolve(__dirname, 'neander.js')
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: '[name].bundle.js',
+        filename: '[name].[hash].js',
     },
     plugins: [
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            template: './index.html'
+            hash: true,
+            template: './index.html',
+            chunks: ['vendor', 'app'],
+            filename: "./index.html"
+        }),
+        new HtmlWebpackPlugin({
+            hash: true,
+            template: './neander.html',
+            chunks: ['vendor', 'neander'],
+            filename: "./neander.html"
+        }),
+        new HtmlWebpackPlugin({
+            hash: true,
+            template: './nav-bar.html',
+            chunks: ['vendor', 'app'],
+            filename: "./nav-bar.html"
         }),
         new WasmPackPlugin({
             crateDirectory: path.resolve(__dirname, "../crate-wasm")
@@ -25,14 +46,6 @@ module.exports = {
         new webpack.ProvidePlugin({
           TextDecoder: ['text-encoding', 'TextDecoder'],
           TextEncoder: ['text-encoding', 'TextEncoder']
-        }),
-        new HtmlWebpackPartialsPlugin({
-          path: './neander.html',
-          location: "neanderdiv"
-        }),
-        new HtmlWebpackPartialsPlugin({
-          path: './ahmes.html',
-          location: "ahmesdiv"
         }),
         new ExtraWatchWebpackPlugin({
           files: ['./*.html']
@@ -46,6 +59,26 @@ module.exports = {
                     'style-loader',
                     'css-loader'
                 ]
+            },
+            {
+                test: /\.(scss)$/,
+                use: [{
+                    loader: 'style-loader', // inject CSS to page
+                }, {
+                    loader: 'css-loader', // translates CSS into CommonJS modules
+                }, {
+                    loader: 'postcss-loader', // Run post css actions
+                    options: {
+                        plugins: function () { // post css plugins, can be exported to postcss.config.js
+                            return [
+                                require('precss'),
+                                require('autoprefixer')
+                            ];
+                        }
+                    }
+                }, {
+                    loader: 'sass-loader' // compiles Sass to CSS
+                }]
             },
             {
                 test: /\.html$/,
