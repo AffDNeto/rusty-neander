@@ -62,30 +62,17 @@
                 <input class="form-control" type="number" id="memInput" value="0">
             </div>
         </div>
-        <div class="col-4" id="registerArea">
+        <div class="col-sm-4" id="registerArea">
             <div id="registerContainer">
-                <div class="btn-group" role="group">
-                    <input type="button" value="Step" class="btn btn-secondary" id="btnStep">
-                    <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="input-group-text">
-                    <input type="button" value="Run" class="btn btn-primary" id='btnRun'>
-                </div>
                 <div class="input-group">
                     <span class="input-group-text">AC</span>
                     <input class="form-control" id="accInput" type="number">
                     <span class="input-group-text">PC</span>
                     <input class="form-control" id="pcInput" type="number">
                 </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" id="negativeFlag" type="checkbox" readonly>
-                    <label for="negativeFlag" class="form-check-label">Negative</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" id="zeroFlag" type="checkbox" readonly>
-                    <label for="zeroFlag" class="form-check-label">Zero</label>
-                </div>
                 <div class="btn-group">
-                    <button class="btn btn-success" value="N" disabled>N</button>
-                    <button class="btn btn-success" value="Z">Z</button>
+                    <button id="btn-flag-n" class="btn btn-success" value="N" disabled>N</button>
+                    <button id="btn-flag-z" class="btn btn-success" value="Z" disabled>Z</button>
                 </div>
                 <div class="input-group">
                     <span class="input-group-text">Acesso</span>
@@ -100,6 +87,16 @@
                     Importar memoria
                     <input type="file" accept=".mem" name="file" id="memFile" hidden>
                 </label>
+                <input type="button" id="clear-registers" class="btn btn-primary" value="Limpar registradores">
+                <div class="btn-group" role="group">
+                    <input type="button" value="Step" class="btn btn-secondary" id="btnStep">
+                    <input type="button" value="Stop" class="btn btn-primary" id='btnStop'>
+                </div>
+                <div class="btn-group" role="group">
+                    <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="input-group-text">
+                    <input type="button" value="Run" class="btn btn-primary" id="btnRun">
+                </div>
+
             </div>
         </div>
         <div class="col-4" id="dataArea">
@@ -124,7 +121,7 @@
             </div>
             <div class="input-group">
                 <span class="input-group-text" id="selData">0</span>
-                <input class="form-control" type="number" id="dataInput" value="0">
+                <input class="form-control" type="number" id="dataInput" value="0" min="0" max="255">
             </div>
         </div>
     </div>

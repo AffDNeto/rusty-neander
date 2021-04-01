@@ -12,41 +12,84 @@ rust
     .catch(console.error);
 
 function load() {
-  window.mem = MemTableControler;
-  window.reg = RegisterController;
-  window.view = NeanderViewModel;
-
   window.NeanderView = new NeanderViewModel(
       document.getElementById('neanderUi'),
       new window.rustModule.NeanderJS()
   );
 }
 
-export class MemTableControler {
-  constructor(table, size) {
-    this.memory_table = table;
-    this.rowsLen = size
+export class ProgramTableView {
+  constructor(
+      table_node, selected_label_node, input_node, memory_change_callback, size) {
+    this.table_node = table_node;
+    this.selected_label_node = selected_label_node;
+    this.input_node = input_node;
+    this.size = size;
+    this.selectedRow = null;
+    this.memory_change_callback = memory_change_callback;
   }
 
   addCell(where, what) {
     var text_node = document.createTextNode(what);
     var cell = document.createElement("td");
+    cell.style = "width:4em !important"
     cell.appendChild(text_node);
     where.appendChild(cell);
   }
 
-  init () {
-    var tb = this.memory_table;
-    tb.onclick = (e) => {
-      let parent = e.target.parentElement;
-      if ( parent.tagName == 'TR' ) {
-        this.onRowClick(parent.rowIndex);
+  init() {
+    this.init_table();
+    this.init_input()
+  }
+
+  init_input() {
+    this.input_node.onkeyup = (ev) => {
+      if (ev.key === 'Enter' || ev.keyCode === 13){
+        this.change_value.bind(this)(ev);
+      }else{
+        console.trace('Enter not presded: ', ev.key);
       }
     };
+    this.selected_row = 0;
+    this.selected_label_node.textContent = this.selected_row;
+  }
 
-    for ( var i = 0, ii = this.rowsLen; i < ii; i++ ) {
+  change_value(ev) {
+    this.memory_change_callback(this.selected_row, ev.target.value);
+  }
+
+  highlight_row(pos){
+    let row = this.table_node.rows[pos];
+    if (row === null || typeof row == "undefined") {
+      console.error('Out of range index for table:', {pos});
+    }
+    console.debug(row)
+    row.scrollIntoView(true);
+    if (!row.classList.contains("table-active")) {
+      row.classList.add('table-active');
+      if (this.selectedRow != null) {
+        this.selectedRow.classList.remove('table-active');
+      }
+      this.selectedRow = row;
+    }
+  }
+
+  select_row(e) {
+    var row = e.target.parentElement;
+    var index = row.rowIndex;
+    this.selected_row = index;
+    this.selected_label_node.textContent = index;
+    this.input_node.value = row.cells[1].textContent;
+    this.input_node.select();
+  }
+
+  init_table() {
+    var tb = this.table_node;
+    tb.onclick = this.select_row.bind(this);
+
+    for (var i = 0, ii = this.size; i < ii; i++ ) {
       var row = tb.insertRow();
-      row.classList.add("normalRow");
+      row.classList.add("clickable-row");
   
       this.addCell(row, i);    
       this.addCell(row, "0");    
@@ -54,15 +97,15 @@ export class MemTableControler {
     }
   
   };
-  
+
   int2Hex(value) {
     return Number(value).toString(16).padStart(2, '0').toUpperCase();
   }
 
   updateRow(id, new_value) {
-    var row = this.memory_table.children[id];
+    var row = this.table_node.children[id+1];
     
-    if (row == undefined) {throw `Couldn't find row number ${id}`}
+    if (typeof row === 'undefined') {throw `Couldn't find row number ${id}`}
     
     row.children[1].textContent = new_value;
     row.children[2].textContent = this.int2Hex(new_value);
@@ -71,12 +114,12 @@ export class MemTableControler {
   
   updateTable(newData) {
     if ( newData == undefined ) { throw "No data given." }
-    if ( newData.length != this.rowsLen ) { 
-      throw `New data size (${newData.length})doesn't match the size the table was created ${this.rowsLen}`
+    if ( newData.length != this.size ) {
+      throw `New data size (${newData.length})doesn't match the size the table was created ${this.size}`
     }
 
-    for ( var i = 0; i < this.rowsLen; i++){
-      this.updateRow(i+1, newData[i]);
+    for (var i = 0; i < this.size; i++){
+      this.updateRow(i, newData[i]);
     }
   }
 }
@@ -87,8 +130,8 @@ export class RegisterController {
 
     this.accInput = this.div.querySelector(`#accInput`);
     this.pcInput = this.div.querySelector(`#pcInput`);
-    this.nFlag = this.div.querySelector(`#negativeFlag`);
-    this.zFlag = this.div.querySelector(`#zeroFlag`);
+    this.btn_n = new Flag(this.div.querySelector("#btn-flag-n"))
+    this.btn_z = new Flag(this.div.querySelector("#btn-flag-z"))
     this.access = this.div.querySelector(`#memAccess`);
     this.instructions = this.div.querySelector(`#instCount`);
   }
@@ -97,24 +140,39 @@ export class RegisterController {
     
     this.accInput.value = acc;
     this.pcInput.value = pc;
-    this.nFlag.checked = nFlag;
-    this.zFlag.checked = zFlag;
     this.access.value = memAccess;
     this.instructions.value = instAccess;
-
+    this.btn_n.set_flag(nFlag);
+    this.btn_z.set_flag(zFlag);
   }
 
   init(){
     this.registerSet(0,0,1,1,0,0,0);
   }
-
 }
 
+class Flag{
+  constructor(node) {
+    this.node = node
+    this.set_flag(false)
+  }
+
+  set_flag(set){
+    if(set) {
+      this.node.classList.remove("btn-danger");
+      this.node.classList.add("btn-success");
+    }else {
+      this.node.classList.remove("btn-success");
+      this.node.classList.add("btn-danger");
+    }
+
+  }
+}
 export class NeanderViewModel {
   constructor(node, model) {
     this.node = node;
     this.cpu = model;
-
+    this.running = false;
     this.setupMemoryView()
     this.setupRegistersView()
     this.setupExecuteView();
@@ -125,10 +183,10 @@ export class NeanderViewModel {
   setupMemImporter(){
     this.memFileInput = this.node.querySelector("#memFile");
     this.memFileInput.onchange = (e) => {
-      console.log("laoding file")
+      console.debug("loading file")
       var reader = new FileReader();
       reader.onload = (e) => {
-        console.log("file loaded  ")
+        console.debug("file loaded  ")
         var mem = readMemFile(e.target.result);
         this.cpu.load_mem(mem)
         this.updateView();
@@ -142,32 +200,31 @@ export class NeanderViewModel {
 
   }
   setupMemoryView(event) {
-    this.memMap = document.querySelector(`#${this.node.id} #memContainer`);
-    this.memMap = new MemTableControler(this.memMap, 256);
-    this.memMap.init();
-    this.memMap.onRowClick = (r) => {this.updateSelectedRow(r);}
-    
-    this.memInput = document.querySelector(`#${this.node.id} #memInput`);
-    this.memInput.onchange = (e) =>
-    {
-      var nv = Number(e.target.value);
-      if ( isNaN(nv) || !(0 <= nv && nv <= 255) )  return false
-      this.cpu.set_mem(this.selectedMemPos, nv);
-      this.memMap.updateRow(this.selectedMemPos+1, nv);
-      e.target.value = nv;
-      return true
-    }
-    this.selectedMemPos = 0;
-    this.posLabel = document.querySelector(`#${this.node.id} #selMem`);
-    this.posLabel.textContent = this.selectedMemPos;
+    var p_table = this.node.querySelector(`#memContainer`);
+    var programViewInput = this.node.querySelector(`#memInput`);
+    var programRowSelected = this.node.querySelector(`#selMem`);
+    this.programView = new ProgramTableView(
+        p_table, programRowSelected, programViewInput,
+        this.changeMemoryValue.bind(this), 256);
+    this.programView.init();
+
+    var d_table = this.node.querySelector(`#dataContainer`);
+    var dataViewInput = this.node.querySelector(`#dataInput`);
+    var dataRowSelected = this.node.querySelector(`#selData`);
+    this.dataView = new ProgramTableView(
+        d_table, dataRowSelected, dataViewInput,
+        this.changeMemoryValue.bind(this), 256);
+    this.dataView.init()
 
   }
 
-  updateSelectedRow(rowIndex) {
-    this.selectedMemPos = rowIndex-1;
-    this.posLabel.textContent = this.selectedMemPos;
-    this.memInput.value = this.cpu.get_state().mem[this.selectedMemPos];
-    this.memInput.focus();
+  changeMemoryValue(position, new_value) {
+    new_value = Number(new_value);
+    if (!isNaN(new_value) && new_value >= 0 && new_value < 256) {
+      this.cpu.set_mem(position, new_value);
+      this.dataView.updateRow(position, new_value);
+      this.programView.updateRow(position, new_value);
+    }
   }
 
   setupExecuteView() {
@@ -180,6 +237,13 @@ export class NeanderViewModel {
     
     this.btnRun = document.querySelector(`#${this.node.id} #btnRun`);
     this.btnRun.onclick = this.run.bind(this);
+
+    this.btnStop = this.node.querySelector("#btnStop")
+    this.btnStop.onclick = this.stop.bind(this);
+  }
+
+  stop(){
+    this.running = false;
   }
 
   setupRegistersView() {
@@ -187,14 +251,20 @@ export class NeanderViewModel {
     this.reg = new RegisterController(this.reg);
     this.reg.init();
     this.setupRegOnchangeCallbacks();
+    this.clear_btn = document.querySelector("#clear-registers")
+    this.clear_btn.onclick = (_) => {
+      this.cpu.clear_counters();
+      this.updateView();
+    };
   }
-  
+
   setupRegOnchangeCallbacks(){
     //sets up the callbacks for updating the registers
     this.reg.pcInput.onchange = (e) => { 
       var nv = Number(e.target.value);
       if ( isNaN(nv) || !(0 <= nv && nv <= 255) )  return false
       this.cpu.set_pc(nv)
+      this.programView.highlight_row(nv);
       this.reg.pcInput.value = nv
       e.target.value = nv
       return true
@@ -223,15 +293,31 @@ export class NeanderViewModel {
     this.updateView();
   }
 
-  run(){
-    this.cpu.execute(this.excuteSteps);
-    this.updateView();
+  run() {
+    if (!this.running) {
+      this.running = true
+      setImmediate(this.continue.bind(this));
+    }
+  }
+
+  continue(){
+    console.log("Continuing " + self.running)
+    if(this.running) {
+      var result = this.cpu.execute(1);
+      this.updateView();
+
+      this.running = result;
+      setTimeout(this.continue.bind(this), 2000)
+    }
+
   }
 
   updateView(){
     var state = this.cpu.get_state();
 
-    this.memMap.updateTable(state.mem);
+    this.programView.updateTable(state.mem);
+    this.dataView.updateTable(state.mem);
+    this.programView.highlight_row(state.pc);
 
     this.reg.registerSet(state.acc, state.pc, state.nf, state.zf, state.mem_access_counter, state.instruction_counter);
 

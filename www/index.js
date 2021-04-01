@@ -9,7 +9,7 @@ require('bootstrap');
 
 import { AhmesView } from "./ahmes";
 import { 
-  MemTableControler, 
+  ProgramTableView,
   NeanderViewModel, 
   RegisterController,
   readMemFile
@@ -23,7 +23,7 @@ rust
   .catch(console.error);
 
 function load() {
-  window.mem = MemTableControler;
+  window.mem = ProgramTableView;
   window.reg = RegisterController;
   window.view = NeanderViewModel;
 

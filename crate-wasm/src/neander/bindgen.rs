@@ -48,7 +48,7 @@ impl NeanderJS {
         JsValue::from_serde(&cpu).unwrap()
     }
     
-    pub fn execute(&mut self, cycles: usize){
+    pub fn execute(&mut self, cycles: usize) -> bool{
         let mut result:bool = true;
         let mut cycle_count:usize = 0;
 
@@ -56,10 +56,17 @@ impl NeanderJS {
             result = self.cpu.step_code();
             cycle_count += 1;
         }
+
+        return result;
     }
 
     pub fn set_pc(&mut self, new_pc: u8) {
         self.cpu.set_pc(new_pc);
+    }
+
+    pub fn clear_counters(&mut self) {
+        self.cpu.instruction_counter = 0;
+        self.cpu.memory_access = 0;
     }
 
     pub fn set_acc(&mut self, new_acc: u8) {

@@ -37,7 +37,7 @@ export class AhmesView extends NeanderViewModel {
     updateView(){
         var state = this.cpu.get_state();
 
-        this.memMap.updateTable(state.mem);
+        this.programView.updateTable(state.mem);
 
         this.reg.registerSet(
             state.acc,
