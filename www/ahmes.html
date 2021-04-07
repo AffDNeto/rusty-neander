@@ -1,50 +1,134 @@
-<div class="neander" id="ahmesUi" style="border: 1px solid #000">
-    <h2>Ahmes Wasm</h2>
-    <div class="controls">
-        <input type="file" name="file" id="memFile">
-        <br>
-        <input type="button" value="Step" class="stepButton" id="btnStep">
-        <input type="button" value="Run" class="runButton" id='btnRun'>
-        <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="steps">
-    </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <title>Simuladores - Ahmes</title>
+</head>
+<body>
 
-    <div id="tableContainer" class="tableContainer">
-        <table id="memoryTable" border="0" cellpadding="0" cellspacing="0" width="100%" class="scrollTable">
-            <thead class="fixedHeader">
-                <tr class="alternateRow">
-                    <th>#</th>
-                    <th>Value</th>
-                    <th>Hex</th>
-                </tr>
-            </thead>
-            <tbody class="scrollContent" id="memContainer">
-                <template><tr class="normalRow"></tr></template>
-            </tbody>
-        </table>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a href="index.html" class="nav-brand">Titanic</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item ">
+                <a href="neander.html" class="nav-link">Neander</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link active">Ahmes</a>
+            </li>
+            <li class="nav-item">
+                <a href="ramses.html" class="nav-link">Ramses</a>
+            </li>
+            <li class="nav-item">
+                <a href="cesar.html" class="nav-link">Cesar</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">About</a>
+            </li>
+        
+        </ul>
     </div>
-    <div id="memoryInput"> 
-        [<label id="selMem">0</label>]<input type="number" id="memInput" value="0">
-    </div>
-    <div id="registerContainer">
-        <table>
-            <tbody>
+</nav>
+
+<div class="card-body" id="ahmesUi">
+    <h2>Ahmes Wasm</h2>
+    <div class="row">
+        <div class="col-4" id="memoryArea">
+            <table id="memoryHeader" class="table table-sm table-bordered display memory" cellspacing="0"
+                   width="100%">
+                <thead>
                 <tr>
-                    <td>AC<input id="accInput" type="number"></td>
-                    <td>PC<input id="pcInput" type="number"> </td>
+                    <th class="th-sm">#</th>
+                    <th class="th-sm">Value</th>
+                    <th class="th-sm">Hex</th>
                 </tr>
+                
+                </thead>
+            </table>
+            <div class="overflow-auto" style="height: 300px">
+                <table id="memoryTable" class="table table-sm table-bordered memory" cellspacing="0">
+                    <tbody id="memContainer">
+                    <template><tr></tr></template>
+                    </tbody>
+                </table>
+            </div>
+            <div class="input-group" id="memoryInput">
+                <span class="input-group-text" id="selMem">0</span>
+                <input class="form-control" type="number" id="memInput" value="0">
+            </div>
+        </div>
+        <div class="col-sm-2" id="registerArea">
+            <div id="registerContainer">
+                <div class="input-group">
+                    <span class="input-group-text">AC</span>
+                    <input class="form-control" id="accInput" type="number">
+                    <span class="input-group-text">PC</span>
+                    <input class="form-control" id="pcInput" type="number">
+                </div>
+                <div class="btn-group">
+                    <button id="btn-flag-n" class="btn btn-success" value="N" disabled>N</button>
+                    <button id="btn-flag-z" class="btn btn-success" value="Z" disabled>Z</button>
+                    <button id="btn-flag-v" class="btn btn-success" value="V" disabled>V</button>
+                    <button id="btn-flag-c" class="btn btn-success" value="C" disabled>C</button>
+                    <button id="btn-flag-b" class="btn btn-success" value="B" disabled>B</button>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text">Acesso</span>
+                    <input class="form-control" id="memAccess" type="number" readonly>
+                </div>
+                <div class="input-group">
+                    
+                    <span class="input-group-text">Intruções</span>
+                    <input class="form-control" id="instCount" type="number" readonly>
+                </div>
+                <label for="memFile" class="btn btn-secondary">
+                    Importar memoria
+                    <input type="file" accept=".mem" name="file" id="memFile" hidden>
+                </label>
+                <input type="button" id="clear-registers" class="btn btn-primary" value="Limpar registradores">
+                <div class="btn-group" role="group">
+                    <input type="button" value="Step" class="btn btn-secondary" id="btnStep">
+                    <input type="button" value="Stop" class="btn btn-primary" id='btnStop'>
+                </div>
+                <div class="btn-group" role="group">
+                    <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="input-group-text">
+                    <input type="button" value="Run" class="btn btn-primary" id="btnRun">
+                </div>
+            
+            </div>
+        </div>
+        <div class="col-4" id="dataArea">
+            <table id="DataHeader" class="table table-sm table-bordered display memory" cellspacing="0"
+                   width="100%">
+                <thead>
                 <tr>
-                    <td>Negative<input id="negativeFlag" type="checkbox" readonly></td>
-                    <td>Zero<input id="zeroFlag" type="checkbox" readonly></td>
-                    <td>Overflow<input id="overflowFlag" type="checkbox" readonly></td>
-                    <td>Carry<input id="carryFlag" type="checkbox" readonly></td>
-                    <td>Borrow<input id="borrowFlag" type="checkbox" readonly></td>
+                    <th class="th-sm">#</th>
+                    <th class="th-sm">Value</th>
+                    <th class="th-sm">Hex</th>
                 </tr>
-                <tr>
-                    <td>Acesso<input id="memAccess" type="number" readonly></td>
-                    <td>Instruções<input id="instCount" type="number" readonly></td>
-                </tr>
-            </tbody>
-        </table>
+                
+                </thead>
+            </table>
+            <div class="overflow-auto" style="height: 300px">
+                <table id="dataTable" class="table table-sm table-bordered memory" cellspacing="0">
+                    <tbody id="dataContainer">
+                    <template><tr></tr></template>
+                    
+                    </tbody>
+                </table>
+            </div>
+            <div class="input-group">
+                <span class="input-group-text" id="selData">0</span>
+                <input class="form-control" type="number" id="dataInput" value="0" min="0" max="255">
+            </div>
         </div>
     </div>
 </div>
+
+</body>
+</html>

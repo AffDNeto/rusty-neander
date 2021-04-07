@@ -48,7 +48,7 @@ impl AhmesJS {
         JsValue::from_serde(&cpu).unwrap()
     }
 
-    pub fn execute(&mut self, cycles: usize){
+    pub fn execute(&mut self, cycles: usize) -> bool{
         let mut result:bool = true;
         let mut cycle_count:usize = 0;
 
@@ -56,6 +56,8 @@ impl AhmesJS {
             result = self.cpu.execute_cycle();
             cycle_count += 1;
         }
+
+        return result;
     }
 
     pub fn set_pc(&mut self, new_pc: u8) {
@@ -64,6 +66,11 @@ impl AhmesJS {
 
     pub fn set_acc(&mut self, new_acc: u8) {
         self.cpu.write_register(1, new_acc);
+    }
+
+    pub fn clear_counters(&mut self) {
+        self.cpu.instruction_counter = 0;
+        self.cpu.mem.access_counter = 0;
     }
 
     pub fn set_mem(&mut self, pos: u8, value: u8){

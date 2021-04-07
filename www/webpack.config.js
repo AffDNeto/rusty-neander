@@ -12,7 +12,8 @@ module.exports = {
     entry: {
         app: path.resolve(__dirname, 'index.js'),
         vendor: Object.keys(package.dependencies),
-        neander: path.resolve(__dirname, 'neander.js')
+        neander: path.resolve(__dirname, 'neander.js'),
+        ahmes: path.resolve(__dirname, 'ahmes.js')
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -31,6 +32,12 @@ module.exports = {
             template: './neander.html',
             chunks: ['vendor', 'neander'],
             filename: "./neander.html"
+        }),
+        new HtmlWebpackPlugin({
+            hash: true,
+            template: './ahmes.html',
+            chunks: ['vendor', 'ahmes'],
+            filename: "./ahmes.html"
         }),
         new HtmlWebpackPlugin({
             hash: true,
