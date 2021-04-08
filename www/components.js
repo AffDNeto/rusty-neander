@@ -9,17 +9,9 @@ export class ProgramTableView {
         this.memory_change_callback = memory_change_callback;
     }
 
-    addCell(where, what) {
-        var text_node = document.createTextNode(what);
-        var cell = document.createElement("td");
-        cell.style = "width:4em !important"
-        cell.appendChild(text_node);
-        where.appendChild(cell);
-    }
-
     init() {
-        this.init_table();
-        this.init_input()
+        setTimeout(this.init_table.bind(this));
+        setTimeout(this.init_input.bind(this));
     }
 
     init_input() {
@@ -64,19 +56,31 @@ export class ProgramTableView {
     }
 
     init_table() {
-        var tb = this.table_node;
+        var tb = this.table_node.cloneNode();
         tb.onclick = this.select_row.bind(this);
 
+
         for (var i = 0, ii = this.size; i < ii; i++ ) {
-            var row = tb.insertRow();
+            // var row = tb.insertRow();
+            var row = document.createElement("tr")
             row.classList.add("clickable-row");
 
             this.addCell(row, i);
             this.addCell(row, "0");
             this.addCell(row, "00");
+
+            tb.appendChild(row);
         }
 
+        this.table_node.replaceWith(tb);
     };
+    addCell(where, what) {
+        var text_node = document.createTextNode(what);
+        var cell = document.createElement("td");
+        cell.style = "width:4em !important"
+        cell.appendChild(text_node);
+        where.appendChild(cell);
+    }
 
     int2Hex(value) {
         return Number(value).toString(16).padStart(2, '0').toUpperCase();
@@ -153,6 +157,7 @@ export class ProcessorViewModel {
     constructor(node, model) {
         this.node = node;
         this.cpu = model;
+        this.memory_size = 256;
         this.running = false;
         this.setupMemoryView()
         this.setupRegistersView()
@@ -188,7 +193,7 @@ export class ProcessorViewModel {
         var programRowSelected = this.node.querySelector(`#selMem`);
         this.programView = new ProgramTableView(
             p_table, programRowSelected, programViewInput,
-            this.changeMemoryValue.bind(this), 256);
+            this.changeMemoryValue.bind(this), this.memory_size);
         this.programView.init();
 
         var d_table = this.node.querySelector(`#dataContainer`);
@@ -196,7 +201,7 @@ export class ProcessorViewModel {
         var dataRowSelected = this.node.querySelector(`#selData`);
         this.dataView = new ProgramTableView(
             d_table, dataRowSelected, dataViewInput,
-            this.changeMemoryValue.bind(this), 256);
+            this.changeMemoryValue.bind(this), this.memory_size);
         this.dataView.init()
 
     }

@@ -15,7 +15,8 @@ module.exports = {
         vendor: Object.keys(package.dependencies),
         neander: path.resolve(__dirname, 'neander.js'),
         ahmes: path.resolve(__dirname, 'ahmes.js'),
-        ramses: path.resolve(__dirname, 'ramses.js')
+        ramses: path.resolve(__dirname, 'ramses.js'),
+        cesar: path.resolve(__dirname, 'cesar.js')
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -46,6 +47,12 @@ module.exports = {
             template: './ramses.html',
             chunks: ['vendor', 'ramses'],
             filename: "./ramses.html"
+        }),
+        new HtmlWebpackPlugin({
+            hash: true,
+            template: './cesar.html',
+            chunks: ['vendor', 'cesar'],
+            filename: "./cesar.html"
         }),
         new HtmlWebpackPlugin({
             hash: true,
