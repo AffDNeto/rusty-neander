@@ -9,11 +9,13 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 package = require('./package.json');
 
 module.exports = {
+    devtool: 'eval-cheap-source-map',
     entry: {
         app: path.resolve(__dirname, 'index.js'),
         vendor: Object.keys(package.dependencies),
         neander: path.resolve(__dirname, 'neander.js'),
-        ahmes: path.resolve(__dirname, 'ahmes.js')
+        ahmes: path.resolve(__dirname, 'ahmes.js'),
+        ramses: path.resolve(__dirname, 'ramses.js')
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -38,6 +40,12 @@ module.exports = {
             template: './ahmes.html',
             chunks: ['vendor', 'ahmes'],
             filename: "./ahmes.html"
+        }),
+        new HtmlWebpackPlugin({
+            hash: true,
+            template: './ramses.html',
+            chunks: ['vendor', 'ramses'],
+            filename: "./ramses.html"
         }),
         new HtmlWebpackPlugin({
             hash: true,

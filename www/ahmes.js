@@ -26,9 +26,9 @@ export class AhmesRegisterControler extends RegisterController {
     constructor(where){
         super(where);
         
-        this.btn_v = new Flag(this.div.querySelector('#btn-flag-v'));
-        this.btn_c = new Flag(this.div.querySelector('#btn-flag-c'));
-        this.btn_b = new Flag(this.div.querySelector('#btn-flag-b'));
+        this.btn_v = new Flag(this.node.querySelector('#btn-flag-v'));
+        this.btn_c = new Flag(this.node.querySelector('#btn-flag-c'));
+        this.btn_b = new Flag(this.node.querySelector('#btn-flag-b'));
     }
 
     registerSet(acc, pc, nFlag, zFlag, vFlag, cFlag, bFlag, memAccess, instAccess){

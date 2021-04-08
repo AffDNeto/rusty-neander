@@ -17,7 +17,9 @@ pub struct RamsesJsInterface {
 
 #[derive(Serialize, Deserialize)]
 pub struct ExportedRamses {
-    pub acc: u8,
+    pub ra: u8,
+    pub rb: u8,
+    pub rx: u8,
     pub pc: u8,
     pub mem: Vec<u8>,
     pub zf: bool,
@@ -38,7 +40,9 @@ impl RamsesJsInterface {
 
     pub fn get_state(&self) -> JsValue {
         let cpu = ExportedRamses {
-            acc: self.cpu.get_register(0),
+            ra: self.cpu.get_register(0),
+            rb: self.cpu.get_register(1),
+            rx: self.cpu.get_register(2),
             pc: self.cpu.get_pc(),
             mem: self.cpu.memory.to_vec(),
             zf: self.cpu.zero_flag,

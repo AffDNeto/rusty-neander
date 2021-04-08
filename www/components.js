@@ -106,14 +106,14 @@ export class ProgramTableView {
 
 export class RegisterController {
     constructor(where){
-        this.div = where
+        this.node = where
 
-        this.accInput = this.div.querySelector(`#accInput`);
-        this.pcInput = this.div.querySelector(`#pcInput`);
-        this.btn_n = new Flag(this.div.querySelector("#btn-flag-n"))
-        this.btn_z = new Flag(this.div.querySelector("#btn-flag-z"))
-        this.access = this.div.querySelector(`#memAccess`);
-        this.instructions = this.div.querySelector(`#instCount`);
+        this.accInput = this.node.querySelector(`#accInput`);
+        this.pcInput = this.node.querySelector(`#pcInput`);
+        this.btn_n = new Flag(this.node.querySelector("#btn-flag-n"))
+        this.btn_z = new Flag(this.node.querySelector("#btn-flag-z"))
+        this.access = this.node.querySelector(`#memAccess`);
+        this.instructions = this.node.querySelector(`#instCount`);
     }
 
     registerSet(acc, pc, nFlag, zFlag, memAccess, instAccess){
@@ -169,7 +169,9 @@ export class ProcessorViewModel {
             reader.onload = (e) => {
                 console.debug("file loaded  ")
                 var mem = readMemFile(e.target.result);
-                this.cpu.load_mem(mem)
+                this.cpu.load_mem(mem);
+                this.cpu.clear_counters();
+                this.cpu.set_pc(0);
                 this.updateView();
             }
             reader.readAsArrayBuffer(e.target.files[0]);
