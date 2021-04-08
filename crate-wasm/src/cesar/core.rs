@@ -18,8 +18,12 @@ pub struct CesarProcessor {
     pub flags: ConditionFlags
 }
 
+
 impl CesarProcessor {
-    fn keyboard_interrupt(&mut self, letter: u8) {
+    pub(crate) fn get_visor(&self) -> &[u8] {
+        return &self.memory.bank[65500 .. 65536];
+    }
+    pub(crate) fn keyboard_interrupt(&mut self, letter: u8) {
         let key_flag = self.read_byte(0xFFDA);
         if key_flag != 0x80 {
             self.write_byte(0xFFDA, 0x80);
@@ -50,7 +54,7 @@ impl CesarProcessor {
     /// runs a complete cycle of the processor
     /// Return value is signalizes if the program can continue to run 
     /// i.e.: last instruction was not a halt and no error happened
-    fn step_code(&mut self) -> bool {
+    pub(crate) fn step_code(&mut self) -> bool {
         trace!("Running next cycle of processor: {:?}", self);
         self.instruction_counter += 1;
         let instruction = self.get_next_instruction();
@@ -399,7 +403,7 @@ pub struct MemoryBank {
     pub rem: u16,
     pub rdm: u8,
     pub access_count: usize,
-    bank: [u8; 65536]
+    pub(crate) bank: [u8; 65536]
 }
 
 impl fmt::Debug for MemoryBank {
