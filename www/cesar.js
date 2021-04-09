@@ -1,18 +1,22 @@
 'use strict';
 
-// require('./ramses.html');
 require('./components.js');
 require('./style.css');
-// require('bootstrap');
-// require('jquery');
 
 import {ProcessorViewModel, RegisterController, Flag, read65kMemFile} from "./components";
+import('../crate-wasm/pkg/index_bg')
+    .then( module => {
+        window.wasm_bg = module;
 
-const rust = import('../crate-wasm/pkg');
+        import('../crate-wasm/pkg')
+            .then(m => {
+                m.greet('World!'); window.rustModule = m; load()
+            } )
+            .catch(console.error);
 
-rust
-    .then(m => { m.greet('World!'); window.rustModule = m; load() } )
-    .catch(console.error);
+    })
+
+
 
 function load() {
     window.RamsesView = new CesarView(
@@ -64,7 +68,7 @@ export class CesarView extends ProcessorViewModel {
     }
 
     setupMemoryView(event) {
-        this.memory_size = 1024;
+        this.memory_size = 1050;
         super.setupMemoryView(event);
     }
 
@@ -74,6 +78,14 @@ export class CesarView extends ProcessorViewModel {
 
     createRegisterController(node) {
         return new CesarRegisterController(node);
+    }
+
+    updateMemoryView(state) {
+        let ptr = this.cpu.get_memory();
+        let mem = new Uint8Array(wasm_bg.memory.buffer, ptr, this.memory_size);
+        this.programView.updateTable(mem);
+        this.dataView.updateTable(mem)
+        this.programView.highlight_row(state.pc);
     }
 
     updateRegisterView(state) {

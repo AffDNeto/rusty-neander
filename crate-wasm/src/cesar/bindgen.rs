@@ -13,7 +13,6 @@ pub struct CesarJsInterface {
 pub struct ExportedCesar {
     pub rx: [u16; 8],
     pub pc: u16,
-    pub mem: Vec<u8>,
     pub zf: bool,
     pub nf: bool,
     pub cf: bool,
@@ -30,12 +29,14 @@ impl CesarJsInterface {
             cpu: CesarProcessor { ..Default::default() }
         }
     }
+    pub fn get_memory(&self) -> *const u8 {
+        return self.cpu.memory.bank.as_ptr();
+    }
 
     pub fn get_state(&self) -> JsValue {
         let cpu = ExportedCesar {
             rx: self.cpu.rx,
             pc: self.cpu.rx[7],
-            mem: self.cpu.memory.bank.to_vec(),
             zf: self.cpu.flags.z,
             nf: self.cpu.flags.n,
             cf: self.cpu.flags.c,
