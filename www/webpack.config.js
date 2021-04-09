@@ -54,12 +54,6 @@ module.exports = {
             chunks: ['vendor', 'cesar'],
             filename: "./cesar.html"
         }),
-        new HtmlWebpackPlugin({
-            hash: true,
-            template: './nav-bar.html',
-            chunks: ['vendor', 'app'],
-            filename: "./nav-bar.html"
-        }),
         new WasmPackPlugin({
             crateDirectory: path.resolve(__dirname, "../crate-wasm")
         }),

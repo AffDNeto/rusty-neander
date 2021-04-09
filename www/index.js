@@ -2,5 +2,4 @@
 // webpack/webpack#6615, but in theory `import { greet } from './pkg';`
 // will work here one day as well!
 require('./style.css');
-require('./nav-bar.html');
 require('bootstrap');

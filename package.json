@@ -6,7 +6,7 @@
   "scripts": {
     "build-prod": "webpack --mode production",
     "build": "webpack --verbose",
-    "serve": "webpack-dev-server"
+    "serve": "webpack-dev-server --verbose --context www --config www/webpack.config.js"
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "1.0.1",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.6.0",
+    "bootstrap-table": "^1.18.3",
     "jquery": "^3.6.0",
     "popper.js": "^1.16.1"
   }
