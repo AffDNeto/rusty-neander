@@ -10,8 +10,8 @@ export class ProgramTableView {
     }
 
     init() {
-        setTimeout(this.init_table.bind(this));
-        setTimeout(this.init_input.bind(this));
+        this.init_table();
+        this.init_input();
     }
 
     init_input() {
@@ -73,11 +73,11 @@ export class ProgramTableView {
         }
 
         this.table_node.replaceWith(tb);
+        this.table_node = tb;
     };
     addCell(where, what) {
         var text_node = document.createTextNode(what);
         var cell = document.createElement("td");
-        cell.style = "width:4em !important"
         cell.appendChild(text_node);
         where.appendChild(cell);
     }
@@ -87,7 +87,7 @@ export class ProgramTableView {
     }
 
     updateRow(id, new_value) {
-        var row = this.table_node.children[id+1];
+        var row = this.table_node.children[id];
 
         if (typeof row === 'undefined') {throw `Couldn't find row number ${id}`}
 
@@ -97,9 +97,9 @@ export class ProgramTableView {
     }
 
     updateTable(newData) {
-        if ( newData == undefined ) { throw "No data given." }
-        if ( newData.length != this.size ) {
-            throw `New data size (${newData.length})doesn't match the size the table was created ${this.size}`
+        if ( newData === undefined ) { throw "No data given." }
+        if ( newData.length < this.size ) {
+            throw `New data size (${newData.length}) doesn't match the size the table was created ${this.size}`
         }
 
         for (var i = 0; i < this.size; i++){
@@ -159,11 +159,18 @@ export class ProcessorViewModel {
         this.cpu = model;
         this.memory_size = 256;
         this.running = false;
-        this.setupMemoryView()
-        this.setupRegistersView()
-        this.setupExecuteView();
-        this.updateView();
-        this.setupMemImporter();
+        process.nextTick(() => {
+            this.setupMemoryView()
+            this.setupRegistersView()
+            this.setupExecuteView();
+            this.setupMemImporter();
+            this.updateView();
+        })
+
+    }
+
+    readMemFile(file) {
+        return readMemFile(file)
     }
 
     setupMemImporter(){
@@ -173,7 +180,7 @@ export class ProcessorViewModel {
             var reader = new FileReader();
             reader.onload = (e) => {
                 console.debug("file loaded  ")
-                var mem = readMemFile(e.target.result);
+                var mem = this.readMemFile(e.target.result);
                 this.cpu.load_mem(mem);
                 this.cpu.clear_counters();
                 this.cpu.set_pc(0);
@@ -295,7 +302,6 @@ export class ProcessorViewModel {
     }
 
     continue( remainingSteps ){
-        console.log("Continuing " + this.running)
         if (remainingSteps <= 0) {this.running = false;}
 
         if(this.running) {
@@ -337,6 +343,18 @@ export function readMemFile(fileByteArray){
     var memArray = []
     for(var i=0; i < mem.length; i +=2){ // Skips every other byte because the file format is like this
         memArray[i/2] = mem[i];
+    }
+
+    return memArray
+
+}
+
+export function read65kMemFile(fileByteArray){
+    const header = new Uint8Array(fileByteArray, 0, 4);
+    const mem = new Uint8Array(fileByteArray, 4);
+    var memArray = []
+    for(var i=0; i < mem.length; i ++){ // Skips every other byte because the file format is like this
+        memArray[i] = mem[i];
     }
 
     return memArray
