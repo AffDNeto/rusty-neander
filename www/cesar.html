@@ -35,8 +35,12 @@
     </div>
 </nav>
 
-<div class="card-body" id="cesarUi">
-    <h2>Ahmes Wasm</h2>
+<div class="container" id="cesarUi">
+    <div class="row">
+        <div class="col">
+            <h2>Ahmes Wasm</h2>
+        </div>
+    </div>
     <div class="row">
         <div class="col-4" id="memoryArea">
             <table id="memoryHeader" class="table table-sm table-bordered display memory" cellspacing="0"
@@ -62,7 +66,7 @@
                 <input class="form-control" type="number" id="memInput" value="0">
             </div>
         </div>
-        <div class="col" id="registerArea">
+        <div class="col-4" id="registerArea">
             <div id="registerContainer">
                 <div class="row no-gutters">
                     <div class="col-lg-4 input-group">
@@ -162,6 +166,11 @@
                 <span class="input-group-text" id="selData">0</span>
                 <input class="form-control" type="number" id="dataInput" value="0" min="0" max="255">
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <pre id="visor-area" class="visor bg-dark text-white text-center">>··23456789··23456789··23456789··2345<</pre>
         </div>
     </div>
 </div>

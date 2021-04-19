@@ -20,8 +20,18 @@ pub struct CesarProcessor {
 
 
 impl CesarProcessor {
-    pub(crate) fn get_visor(&self) -> &[u8] {
-        return &self.memory.bank[65500 .. 65536];
+    pub(crate) fn get_visor(&self) -> String {
+        return self.memory.bank[65500 .. 65536]
+            .iter()
+            .map(|data: &u8| -> char {
+                let d = *data;
+                if d<32 || d>126 {
+                    return ' ' as char;
+                }else{
+                    return char::from(d);
+                }
+            }
+            ).collect();
     }
     pub(crate) fn keyboard_interrupt(&mut self, letter: u8) {
         let key_flag = self.read_byte(0xFFDA);

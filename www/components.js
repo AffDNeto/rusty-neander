@@ -89,7 +89,10 @@ export class ProgramTableView {
     updateRow(id, new_value) {
         var row = this.table_node.children[id];
 
-        if (typeof row === 'undefined') {throw `Couldn't find row number ${id}`}
+        if (typeof row === 'undefined') {
+            console.error("Couldn't find row number"+id)
+            return
+        }
 
         row.children[1].textContent = new_value;
         row.children[2].textContent = this.int2Hex(new_value);

@@ -65,6 +65,7 @@ export class CesarRegisterController extends RegisterController {
 export class CesarView extends ProcessorViewModel {
     constructor(node, model){
         super(node, model);
+        this.visor = node.querySelector('#visor-area')
     }
 
     setupMemoryView(event) {
@@ -86,6 +87,12 @@ export class CesarView extends ProcessorViewModel {
         this.programView.updateTable(mem);
         this.dataView.updateTable(mem)
         this.programView.highlight_row(state.pc);
+        this.updateVisor();
+    }
+
+    changeMemoryValue(position, new_value) {
+        super.changeMemoryValue(position, new_value);
+        this.updateVisor();
     }
 
     updateRegisterView(state) {
@@ -98,5 +105,14 @@ export class CesarView extends ProcessorViewModel {
             state.mem_access_counter,
             state.instruction_counter
         )
+    }
+
+    updateVisor() {
+        var new_visor = this.cpu.get_visor();
+        const space_placeholder = '·';
+        new_visor = new_visor.replaceAll(' ', space_placeholder);
+
+        this.visor.textContent = ">"+new_visor+"<";
+
     }
 }

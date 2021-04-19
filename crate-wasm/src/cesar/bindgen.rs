@@ -90,7 +90,7 @@ impl CesarJsInterface {
         self.cpu.keyboard_interrupt(letter);
     }
 
-    pub fn get_visor(&self) -> Vec<u8> {
-        return self.cpu.get_visor().to_vec();
+    pub fn get_visor(&self) -> String {
+        return self.cpu.get_visor();
     }
 }

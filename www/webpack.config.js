@@ -6,7 +6,7 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-package = require('./package.json');
+package = require('../package.json');
 
 module.exports = {
     devtool: 'eval-cheap-source-map',
