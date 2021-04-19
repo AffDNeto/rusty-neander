@@ -65,9 +65,22 @@ export class CesarRegisterController extends RegisterController {
 export class CesarView extends ProcessorViewModel {
     constructor(node, model){
         super(node, model);
-        this.visor = node.querySelector('#visor-area')
+        this.setupVisor();
     }
+     setupVisor(){
+        this.visor = this.node.querySelector('#visor-area')
+        document.onkeypress = (event) => {
+            var key = event.which || event.keyCode;
+            if (!this.running){
+                console.info('Ignored visor input', event)
+            }
+            if (key <= 255){
+                console.info("Sending keyboard input to cesar", event)
+                this.cpu.input_keyboard(key);
+            }
+        }
 
+     }
     setupMemoryView(event) {
         this.memory_size = 1050;
         super.setupMemoryView(event);

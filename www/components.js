@@ -16,10 +16,9 @@ export class ProgramTableView {
 
     init_input() {
         this.input_node.onkeyup = (ev) => {
+            console.info("Input for memory", ev, this);
             if (ev.key === 'Enter' || ev.keyCode === 13){
                 this.change_value.bind(this)(ev);
-            }else{
-                console.trace('Enter not pressed: ', ev.key);
             }
         };
         this.selected_row = 0;
