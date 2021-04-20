@@ -21,9 +21,7 @@ function load() {
 }
 
 class NeanderViewModel extends ProcessorViewModel {
-    constructor(where) {
-      super(where);
+    constructor(where, model) {
+      super(where, model);
     }
 }
-
-window.readMemFile = readMemFile;
