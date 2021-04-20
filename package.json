@@ -1,7 +1,7 @@
 {
   "author": "Affonso Dick Neto",
   "name": "hypotetical-emulators",
-  "version": "0.2.0",
+  "version": "0.9.0",
   "repository": "https://github.com/AffDNeto/rusty-neander",
   "scripts": {
     "build-prod": "webpack --mode production",
@@ -10,23 +10,22 @@
   },
   "devDependencies": {
     "@wasm-tool/wasm-pack-plugin": "1.0.1",
-    "clean-webpack-plugin": "^3.0.0",
-    "css-loader": "^5.0.1",
-    "exports-loader": "^2.0.0",
-    "extra-watch-webpack-plugin": "^1.0.3",
-    "html-loader": "^1.3.2",
-    "html-webpack-partials-plugin": "^0.8.0",
-    "html-webpack-plugin": "^4.5.1",
-    "style-loader": "^2.0.0",
-    "text-encoding": "^0.7.0",
-    "webpack": "^4.29.4",
-    "webpack-cli": "^3.1.1",
-    "webpack-dev-server": "^3.1.0"
+    "clean-webpack-plugin": "3.0.0",
+    "css-loader": "5.0.1",
+    "exports-loader": "2.0.0",
+    "extra-watch-webpack-plugin": "1.0.3",
+    "html-loader": "1.3.2",
+    "html-webpack-partials-plugin": "0.8.0",
+    "html-webpack-plugin": "4.5.1",
+    "style-loader": "2.0.0",
+    "text-encoding": "0.7.0",
+    "webpack": "4.29.4",
+    "webpack-cli": "3.1.1",
+    "webpack-dev-server": "3.1.0"
   },
   "dependencies": {
-    "bootstrap": "^4.6.0",
-    "bootstrap-table": "^1.18.3",
-    "jquery": "^3.6.0",
-    "popper.js": "^1.16.1"
+    "bootstrap": "4.6.0",
+    "jquery": "3.6.0",
+    "popper.js": "1.16.1"
   }
 }

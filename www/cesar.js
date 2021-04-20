@@ -122,7 +122,7 @@ export class CesarView extends ProcessorViewModel {
 
     updateVisor() {
         var new_visor = this.cpu.get_visor();
-        const space_placeholder = '·';
+        const space_placeholder = " "; //'·';
         new_visor = new_visor.replaceAll(' ', space_placeholder);
 
         this.visor.textContent = ">"+new_visor+"<";
