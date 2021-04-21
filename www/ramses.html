@@ -36,7 +36,7 @@
 </nav>
 
 <div class="card-body" id="ramsesUi">
-    <h2>Ahmes Wasm</h2>
+    <h2>Simulador Ramses</h2>
     <div class="row">
         <div class="col-4" id="memoryArea">
             <table id="memoryHeader" class="table table-sm table-bordered display memory" cellspacing="0"
@@ -65,53 +65,99 @@
         <div class="col" id="registerArea">
             <div id="registerContainer">
                 <div class="row">
-                    <div class="input-group">
-                        <span class="input-group-text">RA</span>
-                        <input class="form-control" id="raInput" type="number">
+                    <div class="col-6">
+                        <label for="memFile" class="btn btn-secondary">
+                            Importar memoria
+                            <input type="file" accept=".mem" name="file" id="memFile" hidden>
+                        </label>
                     </div>
-                    <div class="input-group">
-                        <span class="input-group-text">RB</span>
-                        <input class="form-control" id="rbInput" type="number">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="input-group">
-                        <span class="input-group-text">RX</span>
-                        <input class="form-control" id="rxInput" type="number">
-                    </div>
-                    <div class="input-group">
-                        <span class="input-group-text">PC</span>
-                        <input class="form-control" id="pcInput" type="number">
+                    <div class="col-6">
+                        <input type="button" id="clear-registers" class="btn btn-primary" value="Limpar registradores">
                     </div>
                 </div>
-                <div class="btn-group">
-                    <button id="btn-flag-n" class="btn btn-success" value="N" disabled>N</button>
-                    <button id="btn-flag-z" class="btn btn-success" value="Z" disabled>Z</button>
-                    <button id="btn-flag-c" class="btn btn-success" value="C" disabled>C</button>
+                <div class="row no-gutters my-1" id="registerView">
+                    <div class="col-3">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">RA</span>
+                            </div>
+                            <input class="form-control" id="raInput" type="text" pattern="[0-9]+">
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">RB</span>
+                            </div>
+                            <input class="form-control" id="rbInput" type="text" pattern="[0-9]+">
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">RX</span>
+                            </div>
+                            <input class="form-control" id="rxInput" type="text" pattern="[0-9]+">
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">PC</span>
+                            </div>
+                            <input class="form-control" id="pcInput" type="text" pattern="[0-9]+">
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <span class="input-group-text">Acesso</span>
-                    <input class="form-control" id="memAccess" type="number" readonly>
+                
+                <div class="row" id="flagsView">
+                    <div class="col d-flex justify-content-center">
+                        <div class="btn-group">
+                            <button id="btn-flag-n" class="btn btn-success" value="N" disabled>N</button>
+                            <button id="btn-flag-z" class="btn btn-success" value="Z" disabled>Z</button>
+                            <button id="btn-flag-c" class="btn btn-success" value="C" disabled>C</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    
-                    <span class="input-group-text">Intruções</span>
-                    <input class="form-control" id="instCount" type="number" readonly>
+    
+                <div class="row my-2" id="modelStats">
+                    <div class="col-6">
+                        <div class="input-group">
+                            <span class="input-group-text">Acesso</span>
+                            <input class="form-control" id="memAccess" type="number" readonly>
+                        </div>
+                        <div class="input-group">
+        
+                            <span class="input-group-text">Intruções</span>
+                            <input class="form-control" id="instCount" type="number" readonly>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">RI</span>
+                            </div>
+                            <input class="form-control" id="riInput" type="text" readonly>
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Mnem</span>
+                            </div>
+                            <input class="form-control" id="mnemInput" type="text" readonly>
+                        </div>
+                    </div>
                 </div>
-                <label for="memFile" class="btn btn-secondary">
-                    Importar memoria
-                    <input type="file" accept=".mem" name="file" id="memFile" hidden>
-                </label>
-                <input type="button" id="clear-registers" class="btn btn-primary" value="Limpar registradores">
-                <div class="btn-group" role="group">
-                    <input type="button" value="Step" class="btn btn-secondary" id="btnStep">
-                    <input type="button" value="Stop" class="btn btn-primary" id='btnStop'>
+    
+                <div class="row" id="commandsMenu">
+                    <div class="col">
+                        <div class="btn-group" role="group">
+                            <input type="button" value="Passo" class="btn btn-secondary" id="btnStep">
+                            <input type="button" value="Rodar" class="btn btn-primary" id="btnRun">
+                            <input type="button" value="Parar" class="btn btn-primary" id='btnStop'>
+                            <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="input-group-text" hidden>
+                            </div>
+                    </div>
                 </div>
-                <div class="btn-group" role="group">
-                    <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="input-group-text">
-                    <input type="button" value="Run" class="btn btn-primary" id="btnRun">
-                </div>
-            
             </div>
         </div>
         <div class="col-4" id="dataArea">
