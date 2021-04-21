@@ -347,11 +347,13 @@ export class ProcessorViewModel {
         let [line, i] = state.ri
         let decodedRI = this.decoder.decodeRI(i);
         this.riView.value = i;
-        this.mnemView.value = decodedRI[1];
+        var mnem_value = decodedRI[1];
         if(parseInt(decodedRI[0])===1) {
             this.riView.value += " " + state.mem[line+1];
-            this.mnemView.value += " " + state.mem[line+1];
+            mnem_value = mnem_value.replace('end', state.mem[line+1]);
         }
+
+        this.mnemView.value = mnem_value;
     }
 
 }
@@ -361,15 +363,15 @@ export class NeanderMnemonicDecoder {
         this.decodingTable = {
             256: [0, "???"],
             0: [0, "NOP"],
-            16: [1, "STA"],
-            32: [1, "LDA"],
-            48: [1, "ADD"],
-            64: [1, "OR"],
-            80: [1, "AND"],
+            16: [1, "STA end"],
+            32: [1, "LDA end"],
+            48: [1, "ADD end"],
+            64: [1, "OR end"],
+            80: [1, "AND end"],
             96: [0, "NOT"],
-            128: [1, "JMP"],
-            144: [1, "JN"],
-            160: [1, "JZ"],
+            128: [1, "JMP end"],
+            144: [1, "JN end"],
+            160: [1, "JZ end"],
             240: [0, "HLT"],
         }
     }

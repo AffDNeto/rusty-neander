@@ -75,19 +75,19 @@ class AhmesMnemonicDecoder extends NeanderMnemonicDecoder {
     constructor() {
         super();
         let ahmesTable = {
-            112: [1, "SUB"],
-            148: [1, "JP"],
-            152: [1, "JV"],
-            156: [1, "JNV"],
-            164: [1, "JNZ"],
-            176: [1, "JC"],
-            180: [1, "JNC"],
-            184: [1, "JB"],
-            188: [1, "JNB"],
-            224: [0, "SHR"],
-            225: [0, "SHL"],
-            226: [0, "ROR"],
-            227: [0, "ROL"]
+            112: [1, "SUB end"],
+            148: [1, "JP end"],
+            152: [1, "JV end"],
+            156: [1, "JNV end"],
+            164: [1, "JNZ end"],
+            176: [1, "JC end"],
+            180: [1, "JNC end"],
+            184: [1, "JB end"],
+            188: [1, "JNB end"],
+            224: [0, "SHR end"],
+            225: [0, "SHL end"],
+            226: [0, "ROR end"],
+            227: [0, "ROL end"]
         };
 
         this.decodingTable = Object.assign({}, this.decodingTable, ahmesTable);
@@ -97,7 +97,6 @@ class AhmesMnemonicDecoder extends NeanderMnemonicDecoder {
         let code = ri & parseInt("11110000", 2); // Extract only the first 4 bits
         var mnem = this.decodingTable[code];
 
-        console.log(code, mnem);
         if (code >= parseInt("90", 16) &&
             code <= parseInt("B0", 16)
         ) {

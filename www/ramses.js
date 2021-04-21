@@ -6,7 +6,7 @@ require('./style.css');
 require('bootstrap');
 require('jquery');
 
-import { ProcessorViewModel, RegisterController, Flag } from "./components";
+import {ProcessorViewModel, RegisterController, Flag, NeanderMnemonicDecoder} from "./components";
 
 const rust = import('../crate-wasm/pkg');
 
@@ -53,6 +53,11 @@ export class RamsesView extends ProcessorViewModel {
         super(node, model);
     }
 
+    setupRiView() {
+        super.setupRiView();
+        this.decoder = new RamsesMnemonicDecoder();
+    }
+
     createRegisterController(node) {
         return new RamsesRegisterControler(node);
     }
@@ -69,5 +74,59 @@ export class RamsesView extends ProcessorViewModel {
             state.mem_access_counter,
             state.instruction_counter
         )
+    }
+}
+
+class RamsesMnemonicDecoder extends NeanderMnemonicDecoder {
+    constructor() {
+        super();
+        let ramsesTable = {
+            16: [1, "STR reg end"],
+            32: [1, "LDR reg end"],
+            48: [1, "ADD reg end"],
+            64: [1, "OR reg end"],
+            80: [1, "AND reg end"],
+            96: [0, "NOT reg"],
+            112: [1, "SUB reg end"],
+            128: [1, "JMP end"],
+            144: [1, "JN end"],
+            160: [1, "JZ end"],
+            176: [1, "JC end"],
+            192: [1, "JSR end"],
+            208: [0, "NEG reg"],
+            224: [0, "SHR reg"],
+        }
+        this.decodingTable = Object.assign({}, this.decodingTable, ramsesTable)
+
+        this.modeTable = {
+            0: "end",
+            1: "end,I",
+            2: "#end",
+            3: "end,X",
+        }
+
+        this.regTable = {
+            0: "A",
+            1: "B",
+            2: "X",
+            3: "?",
+        }
+    }
+
+    decodeRI(ri) {
+        let code = ri & parseInt('11110000', 2);
+        let mode = ri & parseInt('00000011', 2);
+        let reg = (ri & parseInt('00001100', 2)) >> 2;
+
+        var mnem = this.decodingTable[code];
+
+        if(mnem === undefined) {
+            return this.decodingTable[256];
+        }
+
+        mnem[1] = mnem[1].replace('reg', this.regTable[reg]);
+        mnem[1] = mnem[1].replace('end', this.modeTable[mode]);
+
+        return mnem
     }
 }
