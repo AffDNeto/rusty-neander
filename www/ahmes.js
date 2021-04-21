@@ -6,7 +6,7 @@ require('./style.css');
 require('bootstrap');
 require('jquery');
 
-import { ProcessorViewModel, RegisterController, Flag } from "./components";
+import {ProcessorViewModel, RegisterController, Flag, NeanderMnemonicDecoder} from "./components";
 
 const rust = import('../crate-wasm/pkg');
 
@@ -47,6 +47,11 @@ export class AhmesView extends ProcessorViewModel {
         super(node, model);
     }
 
+    setupRiView() {
+        super.setupRiView();
+        this.decoder = new AhmesMnemonicDecoder();
+    }
+
     createRegisterController(node) {
         return new AhmesRegisterControler(node);
     }
@@ -63,5 +68,53 @@ export class AhmesView extends ProcessorViewModel {
             state.mem_access_counter,
             state.instruction_counter
         )
+    }
+}
+
+class AhmesMnemonicDecoder extends NeanderMnemonicDecoder {
+    constructor() {
+        super();
+        let ahmesTable = {
+            112: [1, "SUB"],
+            148: [1, "JP"],
+            152: [1, "JV"],
+            156: [1, "JNV"],
+            164: [1, "JNZ"],
+            176: [1, "JC"],
+            180: [1, "JNC"],
+            184: [1, "JB"],
+            188: [1, "JNB"],
+            224: [0, "SHR"],
+            225: [0, "SHL"],
+            226: [0, "ROR"],
+            227: [0, "ROL"]
+        };
+
+        this.decodingTable = Object.assign({}, this.decodingTable, ahmesTable);
+    }
+
+    decodeRI(ri) {
+        let code = ri & parseInt("11110000", 2); // Extract only the first 4 bits
+        var mnem = this.decodingTable[code];
+
+        console.log(code, mnem);
+        if (code >= parseInt("90", 16) &&
+            code <= parseInt("B0", 16)
+        ) {
+            // Check which jump it is
+            let jump_code = ri & parseInt("11111100");
+            mnem = this.decodingTable[jump_code];
+        }
+        if( parseInt(code) === parseInt("E0", 16) ){
+            // Check which bit shift it is
+            let shift_code = ri & parseInt("11110011", 2);
+            mnem = this.decodingTable[shift_code];
+        }
+
+        if(mnem !== undefined) {
+            return mnem;
+        }else {
+            return this.decodingTable[256];
+        }
     }
 }

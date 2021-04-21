@@ -359,6 +359,7 @@ export class ProcessorViewModel {
 export class NeanderMnemonicDecoder {
     constructor() {
         this.decodingTable = {
+            256: [0, "???"],
             0: [0, "NOP"],
             16: [1, "STA"],
             32: [1, "LDA"],
@@ -378,12 +379,13 @@ export class NeanderMnemonicDecoder {
     decodeRI(ri){
         // Extract instruction code
         let code = ri & 240;
-        for (const c of Object.keys(this.decodingTable)) {
-            if(parseInt(c) === code){
-                return this.decodingTable[c];
-            }
+        let mnem = this.decodingTable[code];
+
+        if (mnem === undefined) {
+            return this.decodingTable[256];
+        } else {
+            return mnem
         }
-        return [0, "???"]
     }
 }
 
