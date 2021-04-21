@@ -166,6 +166,7 @@ export class ProcessorViewModel {
             this.setupRegistersView()
             this.setupExecuteView();
             this.setupMemImporter();
+            this.setupRiView();
             this.updateView();
         })
 
@@ -259,6 +260,12 @@ export class ProcessorViewModel {
         };
     }
 
+    setupRiView() {
+        console.log("Settingup decoder")
+        this.riView = this.node.querySelector("#riInput");
+        this.mnemView = this.node.querySelector("#mnemInput");
+        this.decoder = new NeanderMnemonicDecoder();
+    }
     setupRegOnchangeCallbacks(){
         //sets up the callbacks for updating the registers
         this.reg.pcInput.onchange = (e) => {
@@ -333,10 +340,51 @@ export class ProcessorViewModel {
 
         this.updateMemoryView(state);
         this.updateRegisterView(state);
+        this.updateRiView(state);
     }
 
+    updateRiView(state) {
+        let [line, i] = state.ri
+        let decodedRI = this.decoder.decodeRI(i);
+        this.riView.value = i;
+        this.mnemView.value = decodedRI[1];
+        if(parseInt(decodedRI[0])===1) {
+            this.riView.value += " " + state.mem[line+1];
+            this.mnemView.value += " " + state.mem[line+1];
+        }
+    }
 
+}
 
+export class NeanderMnemonicDecoder {
+    constructor() {
+        this.decodingTable = {
+            0: [0, "NOP"],
+            16: [1, "STA"],
+            32: [1, "LDA"],
+            48: [1, "ADD"],
+            64: [1, "OR"],
+            80: [1, "AND"],
+            96: [0, "NOT"],
+            128: [1, "JMP"],
+            144: [1, "JN"],
+            160: [1, "JZ"],
+            240: [0, "HLT"],
+        }
+    }
+
+    // Decodes instruction based on it's value
+    // and return it's arity and mnemonic
+    decodeRI(ri){
+        // Extract instruction code
+        let code = ri & 240;
+        for (const c of Object.keys(this.decodingTable)) {
+            if(parseInt(c) === code){
+                return this.decodingTable[c];
+            }
+        }
+        return [0, "???"]
+    }
 }
 
 export function readMemFile(fileByteArray){

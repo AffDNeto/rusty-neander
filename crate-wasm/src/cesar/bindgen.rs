@@ -13,6 +13,7 @@ pub struct CesarJsInterface {
 pub struct ExportedCesar {
     pub rx: [u16; 8],
     pub pc: u16,
+    pub ri: Vec<u8>,
     pub zf: bool,
     pub nf: bool,
     pub cf: bool,
@@ -37,6 +38,7 @@ impl CesarJsInterface {
         let cpu = ExportedCesar {
             rx: self.cpu.rx,
             pc: self.cpu.rx[7],
+            ri: self.cpu.decoder.ri.to_vec(),
             zf: self.cpu.flags.z,
             nf: self.cpu.flags.n,
             cf: self.cpu.flags.c,
