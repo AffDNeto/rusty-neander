@@ -10,7 +10,7 @@ use crate::common::{
 #[derive(Debug)]
 pub struct RamsesMachine{
     pub pc: u8,
-    pub ri: u8,
+    pub ri: [u8;2],
     pub rem: u8,
     pub rdm: u8,
     pub ra: u8,
@@ -28,7 +28,7 @@ impl Default for RamsesMachine {
     fn default() -> Self {
         RamsesMachine {
             pc: 0,
-            ri: 0,
+            ri: [0;2],
             rem: 0,
             rdm: 0,
             ra: 0,
@@ -101,7 +101,7 @@ impl RegisterBank for RamsesMachine {
     }
     #[inline]
     fn get_ri(&self) -> u8 {
-        return self.ri;
+        return self.ri[1];
     }
     #[inline]
     fn get_register(&self, id: u8) -> u8 {
@@ -118,8 +118,9 @@ impl RegisterBank for RamsesMachine {
         self.pc = value;
     }
     #[inline]
-    fn set_ri(&mut self, value: u8) {
-        self.ri = value;
+    fn set_ri(&mut self, pos:u8, value: u8) {
+        self.ri[0] = pos;
+        self.ri[1] = value;
     }
     #[inline]
     fn set_register(&mut self, id: u8, value: u8) {

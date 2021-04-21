@@ -5,7 +5,7 @@ pub trait RegisterBank {
     fn get_register(&self, id: u8) -> u8;
 
     fn set_pc(&mut self, value: u8);
-    fn set_ri(&mut self, value: u8);
+    fn set_ri(&mut self, pos:u8, value: u8);
     fn set_register(&mut self, id: u8, value: u8);
 
     fn _increment_pc(&mut self) -> u8 {

@@ -30,7 +30,7 @@ pub trait Runner: SimpleAlu + RegisterBank + Memory {
     /// sets RI
     fn search_instruction(&mut self) {
         self.read_from_pc();
-        self.set_ri(self.get_rdm());
+        self.set_ri(self.get_rem(), self.get_rdm());
     }
 
     /// Reads from memory using the pc as an address and increments it

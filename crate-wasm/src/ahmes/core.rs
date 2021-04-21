@@ -3,319 +3,11 @@ use crate::common::runner_trait::Runner;
 use crate::common::register_trait::RegisterBank;
 use crate::common::alu_trait::SimpleAlu;
 use crate::common::memory_trait::Memory as MemoryExp;
-use crate::common::{AhmesInstructions, BasicALU, ExecuteCycle, Memory, Memory256, NeanderOperations};
-
-#[derive(Debug)]
-pub struct AhmesEmulator {
-    pub mem: Memory256,
-    pub registers: [u8; 2],
-    pub ri:u8,
-    pub negative_flag: bool,
-    pub zero_flag: bool,
-    pub carry_flag: bool,
-    pub borrow_flag: bool,
-    pub overflow_flag: bool,
-    pub instruction_counter: usize
-}
-
-impl Default for AhmesEmulator{
-    fn default() -> Self { 
-        AhmesEmulator{
-            mem: Memory256{..Default::default()},
-            registers: [0; 2],
-            ri: 0,
-            negative_flag: false,
-            zero_flag: false,
-            carry_flag: false,
-            borrow_flag: false,
-            overflow_flag: false,
-            instruction_counter: 0
-        } 
-    }
-}
-
-impl BasicALU for AhmesEmulator {
-    fn read_register(&self, id: usize) -> u8 {
-        self.registers[id]
-    }
-
-    fn write_register(&mut self, id: usize, value: u8) {
-        self.registers[id] = value;
-    }
-}
-
-impl ExecuteCycle<u8> for AhmesEmulator {
-    fn next_instruction(&mut self) -> u8 {
-        let value = self.mem.direct_read(self.read_pc());
-        self.increment_pc();
-        return value;
-        
-    }
-
-    fn run_instruction(&mut self, op_code: u8) -> bool {
-        let op = (op_code & 0b1111_0000) >> 4;
-        self.ri = op_code;
-        let jmp_op = ( op_code & 0b0000_1100) >> 2;
-        let shift_op = op_code & 0b0000_0011;
-        self.instruction_counter += 1;
-
-        match op {
-            0x0 => return self.no_operation(),
-            0x1 => return self.store(),
-            0x2 => return self.load(),
-            0x3 => return self.add(),
-            0x4 => return self.or(),
-            0x5 => return self.and(),
-            0x6 => return self.not(),
-            0x7 => return self.sub(),
-            0x8 => return self.jump(),
-            0x9 => {
-                match jmp_op {
-                    0x0 => return self.jump_negative(),
-                    0x1 => return self.jump_non_negative(),
-                    0x2 => return self.jump_overflow(),
-                    0x3 => return self.jump_non_overflow(),
-                    _ => false
-                }
-            },
-            0xA => {
-                match jmp_op {
-                    0x0 => return self.jump_zero(),
-                    0x1 => return self.jump_non_zero(),
-                    _ => false
-                }
-            },
-            0xB => {
-                match jmp_op {                    
-                    0x0 => return self.jump_carry(),
-                    0x1 => return self.jump_non_carry(),
-                    0x2 => return self.jump_borrow(),
-                    0x3 => return self.jump_non_borrow(),
-                    _ => false
-                }
-            },
-            0xE => {
-                match shift_op {                    
-                    0x0 => return self.shift_right(),
-                    0x1 => return self.shift_left(),
-                    0x2 => return self.rotate_right(),
-                    0x3 => return self.rotate_left(),
-                    _ => false
-                }
-            },
-            0xF => return self.halt(),
-            _ => {
-                println!("Whoops! {} {}", op, op_code);
-                return self.halt()
-            }
-        }
-    }
-}
-
-impl AhmesEmulator {
-    fn set_flags(&mut self, value: u8) {
-        self.zero_flag = value == 0;
-        self.negative_flag = value.leading_ones() > 0;
-    }
-
-    /// Retrieve destination address and jumps if condition is true
-    fn jump_if(&mut self, condition: bool) -> bool {
-        if condition { 
-            let pos = self.next_instruction();
-            self.set_pc(pos) 
-        }else{
-            self.increment_pc()
-        }
-        return true
-    }
-}
-
-impl NeanderOperations for AhmesEmulator {
-    fn store(&mut self) -> bool {
-        let pos = self.next_instruction();
-        self.mem.direct_write(
-            pos, 
-            self.read_register(1)
-        );
-        return true
-    }
-
-    fn load(&mut self) -> bool {
-        let pos = self.next_instruction();
-        let value = self.mem.direct_read(pos);
-        self.write_register(1, value);
-        self.set_flags(value);
-        return true
-    }
-
-    fn add(&mut self) -> bool {
-        let pos = self.next_instruction();
-        let value = self.mem.direct_read(pos);
-        let acc = self.read_register(1);
-        let (result, carry) = acc.overflowing_add(value);
-        let (_, overflow) = (acc as i8).overflowing_add(value as i8);
-        
-        self.write_register(1, result);
-        self.set_flags(result);
-        self.overflow_flag = overflow;
-        self.carry_flag = carry;
-        return true
-    }
-
-    fn or(&mut self) -> bool {
-        let pos = self.next_instruction();
-        let value = self.mem.direct_read(pos);
-        let acc = self.read_register(1);
-        let result = value | acc;
-
-        self.write_register(1, result);
-        self.set_flags(result);
-
-        return true;
-    }
-
-    fn and(&mut self) -> bool {
-        let pos = self.next_instruction();
-        let value = self.mem.direct_read(pos);
-        let acc = self.read_register(1);
-        let result = value & acc;
-
-        self.write_register(1, result);
-        self.set_flags(result);
-
-        return true;
-    }
-
-    fn not(&mut self) -> bool {
-        let result = ! self.read_register(1);
-        self.write_register(1, result);
-        self.set_flags(result);
-
-        return true;
-    }
-
-    fn jump(&mut self) -> bool {
-        let pos = self.next_instruction();
-        self.set_pc(pos);
-
-        return true;
-    }
-
-    fn jump_negative(&mut self) -> bool {
-        return self.jump_if(self.negative_flag)
-    }
-
-    fn jump_zero(&mut self) -> bool {
-        return self.jump_if(self.zero_flag);
-    }
-}
-
-impl AhmesInstructions for AhmesEmulator {
-    fn sub(&mut self) -> bool {
-        let pos = self.next_instruction();
-        let value = self.mem.direct_read(pos);
-        let acc = self.read_register(1);
-        let (result, carry) = acc.overflowing_sub(value);
-        let (_, overflow) = (acc as i8).overflowing_sub(value as i8);
-        
-        self.write_register(1, result);
-        self.set_flags(result);
-        self.overflow_flag = overflow;
-        self.carry_flag = carry;
-        return true
-    }
-    
-    fn jump_non_zero(&mut self) -> bool {
-        return self.jump_if(!self.zero_flag)
-    }
-
-    fn jump_non_negative(&mut self) -> bool {
-        return self.jump_if(!self.negative_flag)
-    }
-
-    fn jump_overflow(&mut self) -> bool {
-        return self.jump_if(self.overflow_flag)
-    }
-
-    fn jump_non_overflow(&mut self) -> bool {
-        return self.jump_if(!self.overflow_flag)
-    }
-
-    fn jump_carry(&mut self) -> bool {
-        return self.jump_if(self.carry_flag)
-    }
-
-    fn jump_non_carry(&mut self) -> bool {
-        return self.jump_if(!self.carry_flag)
-    }
-
-    fn jump_borrow(&mut self) -> bool {
-        return self.jump_if(self.borrow_flag)
-    }
-
-    fn jump_non_borrow(&mut self) -> bool {
-        return self.jump_if(!self.borrow_flag)
-    }
-
-    fn shift_right(&mut self) -> bool {
-        let mut result = self.read_register(1);
-        self.carry_flag = ( result & 0x01u8 ) != 0;
-        result >>= 1;
-
-        self.write_register(1, result);
-        self.set_flags(result);
-
-        return true
-    }
-
-    fn shift_left(&mut self) -> bool {
-        let mut result = self.read_register(1);
-        self.carry_flag = ( result & 0x80u8 ) != 0;
-        result <<= 1;
-
-        self.write_register(1, result);
-        self.set_flags(result);
-
-        return true
-    }
-
-    fn rotate_right(&mut self) -> bool {
-        let mut result = self.read_register(1);
-        let tmp_carry = self.carry_flag;
-        self.carry_flag = ( result & 0x01u8 ) != 0;
-        result >>= 1;
-
-        if tmp_carry {
-            result &= 0x80u8;
-        }
-
-        self.write_register(1, result);
-        self.set_flags(result);
-
-        return true
-    }
-
-    fn rotate_left(&mut self) -> bool {
-        let mut result = self.read_register(1);
-        let tmp_carry = self.carry_flag;
-        self.carry_flag = ( result & 0x80u8 ) != 0;
-        result <<= 1;
-
-        if tmp_carry {
-            result &= 0x01u8;
-        }
-        
-        self.write_register(1, result);
-        self.set_flags(result);
-
-        return true
-    }
-}
 
 #[derive(Debug)]
 pub struct AhmesMachine{
     pub pc: u8,
-    pub ri: u8,
+    pub ri: [u8;2],
     pub rem: u8,
     pub rdm: u8,
     pub acc: u8,
@@ -334,7 +26,7 @@ impl Default for AhmesMachine {
     fn default() -> Self {
         AhmesMachine {
             pc: 0,
-            ri: 0,
+            ri: [0; 2],
             rem: 0,
             rdm: 0,
             acc: 0,
@@ -482,7 +174,7 @@ impl RegisterBank for AhmesMachine {
     }
     #[inline]
     fn get_ri(&self) -> u8 {
-        return self.ri;
+        return self.ri[1];
     }
     #[inline]
     fn get_register(&self, _: u8) -> u8 {
@@ -493,8 +185,9 @@ impl RegisterBank for AhmesMachine {
         self.pc = value;
     }
     #[inline]
-    fn set_ri(&mut self, value: u8) {
-        self.ri = value;
+    fn set_ri(&mut self, pos:u8, value: u8) {
+        self.ri[0] = pos;
+        self.ri[1] = value;
     }
     #[inline]
     fn set_register(&mut self, _: u8, value: u8) {
@@ -502,29 +195,6 @@ impl RegisterBank for AhmesMachine {
     }
 }
 
-
-#[cfg(test)]
-mod ahmes_test{
-    use super::*;
-    use rstest::*;
-
-    #[rstest(acc, op, c, v,
-        case(0, 128, false, false),
-        case(128, 128, true, true),
-        case(127, 1, false, true),
-        case(255, 1, true, false)
-    )]
-    fn add_flags(acc: u8, op: u8, c: bool, v: bool) {
-        let mut cpu = AhmesEmulator{..Default::default()};
-        cpu.write_register(1, acc);
-        cpu.mem._write(0, 1);
-        cpu.mem._write(1, op);
-        cpu.add();
-        assert_eq!(cpu.carry_flag, c);
-        assert_eq!(cpu.overflow_flag, v);
-    }
-
-}
 
 #[cfg(test)]
 mod functional_tests {
