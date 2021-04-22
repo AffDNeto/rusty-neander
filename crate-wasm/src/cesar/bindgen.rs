@@ -5,6 +5,13 @@ use serde::{Serialize, Deserialize};
 use crate::cesar::core::CesarProcessor;
 
 #[wasm_bindgen]
+extern "C" {
+    fn alert(s: &str);
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+
+#[wasm_bindgen]
 pub struct CesarJsInterface {
     cpu: CesarProcessor
 }
@@ -26,6 +33,8 @@ pub struct ExportedCesar {
 impl CesarJsInterface {
     #[wasm_bindgen(constructor)]
     pub fn new() -> CesarJsInterface {
+        console_error_panic_hook::set_once();
+
         CesarJsInterface {
             cpu: CesarProcessor { ..Default::default() }
         }
@@ -68,6 +77,7 @@ impl CesarJsInterface {
     pub fn clear_counters(&mut self) {
         self.cpu.instruction_counter = 0;
         self.cpu.memory.access_count = 0;
+        self.cpu.rx[7] = 0;
     }
 
     pub fn set_register(&mut self, id: usize, new_value: u16) {
@@ -80,6 +90,10 @@ impl CesarJsInterface {
 
     pub fn load_mem(&mut self, array:JsValue) {
         let elements: Vec<u8> = array.into_serde().unwrap();
+        if ( elements.len() != 65536 ) {
+            log("Invalid memory size!");
+            return;
+        }
         self.cpu.memory.bank = elements.try_into()
             .unwrap_or_else(
                 |v: Vec<u8>|

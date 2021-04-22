@@ -19,7 +19,7 @@ import('../crate-wasm/pkg/index_bg')
 
 
 function load() {
-    window.RamsesView = new CesarView(
+    window.ModelView = new CesarView(
         document.getElementById('cesarUi'),
         new window.rustModule.CesarJsInterface()
     );
@@ -67,12 +67,14 @@ export class CesarView extends ProcessorViewModel {
         super(node, model);
         this.setupVisor();
     }
-     setupVisor(){
+
+    setupVisor(){
         this.visor = this.node.querySelector('#visor-area')
         document.onkeypress = (event) => {
             var key = event.which || event.keyCode;
             if (!this.running){
                 console.info('Ignored visor input', event)
+                return;
             }
             if (key <= 255){
                 console.info("Sending keyboard input to cesar", event)
@@ -80,7 +82,13 @@ export class CesarView extends ProcessorViewModel {
             }
         }
 
-     }
+    }
+
+    setupRiView() {
+        super.setupRiView();
+        this.decoder = new CesarMnemonicDecoder();
+    }
+
     setupMemoryView(event) {
         this.memory_size = 1050;
         super.setupMemoryView(event);
@@ -127,5 +135,220 @@ export class CesarView extends ProcessorViewModel {
 
         this.visor.textContent = ">"+new_visor+"<";
 
+    }
+
+    updateRiView(state) {
+        let ri = state.ri;
+        let decodedRi = this.decoder.decodeRI(ri);
+        this.riView.value = ri[0];
+
+        if (parseInt(decodedRi[0]) >= 1 ){
+            this.riView.value += " " + ri[1];
+        }
+
+        this.mnemView.value = decodedRi[1].replace('end', ri[1]);
+    }
+}
+
+class CesarMnemonicDecoder {
+    constructor() {
+        this.unknown = [0, '???'];
+        this.decodingTable = {
+            0: [0, "NOP"],
+            1: this.decodeFlagOp,
+            2: this.decodeFlagOp,
+            3: this.decodeBranch,
+            4: this.decodeJMP,
+            5: this.decodeSOB,
+            6: this.decodeJSR,
+            7: this.decodeRTS,
+            8: this.decodeSingleOp,
+            9: this.decodeDoubleOp,
+            10: this.decodeDoubleOp,
+            11: this.decodeDoubleOp,
+            12: this.decodeDoubleOp,
+            13: this.decodeDoubleOp,
+            14: this.decodeDoubleOp,
+            15: [0, "HLT"],
+        }
+
+        this.branchTable = {
+            0: "BR",
+            1: "BNE",
+            2: "BEQ",
+            3: "BPL",
+            4: "BMI",
+            5: "BVC",
+            6: "BVS",
+            7: "BCC",
+            8: "BCS",
+            9: "BGE",
+            10: "BLT",
+            11: "BGT",
+            12: "BLE",
+            13: "BHI",
+            14: "BLS",
+        }
+
+        this.modeTable = {
+            0: "reg",
+            1: "(reg)+",
+            2: "-(reg)",
+            3: "end(reg)",
+            4: "(reg)",
+            5: "((reg)+)",
+            6: "(-(reg))",
+            7: "(end(reg))",
+        }
+
+        this.singleOpTable = {
+            0: "CLR",
+            1: "NOT",
+            2: "INC",
+            3: "DEC",
+            4: "NEG",
+            5: "TST",
+            6: "ROR",
+            7: "ROL",
+            8: "ASR",
+            9: "ASL",
+            10: "ADC",
+            11: "SBC",
+        }
+
+        this.doubleOpTable = {
+            1: "MOV",
+            2: "ADD",
+            3: "SUB",
+            4: "CMP",
+            5: "AND",
+            6: "OR",
+        }
+    }
+
+    extractCode(value, mask, radix=2) {
+        return value & parseInt(mask, radix)
+    }
+
+    decodeRegMode(reg, mode){
+        var arity = 0;
+
+        if ((mode == 1 || mode == 5) && reg == 7) {
+            arity += 2; // Instruction uses the next 2 positions to execute
+        }
+
+        return [this.modeTable[mode].replace('reg', "R"+reg), arity];
+    }
+    decodeFlagOp(ri) {
+        var code = (ri[0] & parseInt("f0", 16)) >> 4;
+        var mnem;
+        if (parseInt(code) === 1) {
+            mnem = "CCC "
+        }else {
+            mnem = "SCC "
+        }
+
+        if ( (ri[0] & parseInt("1000", 2)) !== 0) {
+            mnem += "N"
+        }
+        if ( (ri[0] & parseInt("0100", 2)) !== 0) {
+            mnem += "Z"
+        }
+        if ( (ri[0] & parseInt("0010", 2)) !== 0) {
+            mnem += "V"
+        }
+        if ( (ri[0] & parseInt("0001", 2)) !== 0) {
+            mnem += "C"
+        }
+
+        return [0, mnem]
+    }
+
+    decodeBranch(ri) {
+        let branch = this.extractCode(ri[0], '0f', 16);
+        var mnem = this.branchTable[branch];
+
+        if (mnem === undefined) { return  this.unknown }
+
+        mnem += " "+ri[1];
+        return [1, mnem]
+    }
+
+    decodeJMP(ri) {
+        console.debug("jump", ri)
+        let reg = this.extractCode(ri[1], '111', 2);
+        let mode = this.extractCode(ri[1], '111000', 2) >> 3;
+        let regMode = this.decodeRegMode(reg, mode)
+        let mnem = "JMP "+regMode[0];
+        return [1+regMode[1], mnem]
+    }
+    decodeSOB(ri) {
+        console.debug("sob", ti);
+        let r = this.extractCode(ri[0],'111', 2);
+
+        return [1, "SOB R"+r+",end"]
+    }
+    decodeJSR(ri) {
+        console.debug("jsr", ri)
+        let r1 = this.extractCode(ri[0], '111', 2);
+        let r2 = this.extractCode(ri[1], '111', 2);
+        let mode = this.extractCode(ri[1], '111000', 2) >> 3;
+        let regMode = this.decodeRegMode(r2, mode)
+
+        return [1+regMode[1], "JSR R"+r1+","+regMode[0]];
+    }
+
+    decodeRTS(ri) {
+        console.debug('rts', ri);
+        let r = this.extractCode(ri[0], '111', 2);
+        return [0, "RTS R"+r]
+    }
+
+    decodeSingleOp(ri) {
+        let code = this.extractCode(ri[0], '1111', 2);
+        let reg = this.extractCode(ri[1], '111', 2);
+        let mode = this.extractCode(ri[1], '111000', 2) >> 3;
+        let regMode = this.decodeRegMode(reg,mode);
+
+        var mnem = this.singleOpTable[code]+" "+regMode[0];
+
+        return [1+regMode[1], mnem]
+    }
+
+    decodeDoubleOp(ri) {
+        console.debug("double op ", ri);
+        let code = this.extractCode(ri[0], '1110000', 2) >> 4;
+        let r_src = this.extractCode(ri[0], '1', 2) << 2 +
+                    this.extractCode(ri[1], '11000000', 2) >> 6;
+        let m_src = this.extractCode(ri[0], '1110', 2) >> 1;
+        let r_dst = this.extractCode(ri[1], '111', 2) ;
+        let m_dst = this.extractCode(ri[1], '111000', 2) >> 3;
+
+        let reg_mode_src = this.decodeRegMode(r_src, m_src);
+        let reg_mode_dst = this.decodeRegMode(r_dst, m_dst);
+
+        let mnem = [this.doubleOpTable[code], reg_mode_src[0], reg_mode_dst[0]].join(" ");
+        let arity = 1 + reg_mode_src[1] + reg_mode_dst[1];
+
+        return [arity, mnem];
+    }
+
+    decodeRI(ri) {
+        console.debug('Decoding '+ri)
+        let code = (ri[0] & parseInt('11110000', 2)) >> 4;
+        let mnem = this.decodingTable[code];
+
+        if( mnem === undefined) {return this.unknown}
+
+        if ( (typeof mnem) === "function" ) {
+            try {
+                return mnem.bind(this)(ri);
+            } catch (e) {
+                console.error(e)
+                return this.unknown;
+            }
+        }
+
+        return mnem;
     }
 }
