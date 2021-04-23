@@ -9,6 +9,14 @@
     font-family: 'Courier New' !important;
 }
 
+.data-header {
+    margin-bottom: 0px !important;
+}
+.data-container {
+    overflow: auto;
+    height: 300px;
+}
+
 /*!* Terence Ordona, portal[AT]imaputz[DOT]com         *!*/
 /*!* http://creativecommons.org/licenses/by-sa/2.0/    *!*/
 

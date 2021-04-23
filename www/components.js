@@ -1,3 +1,9 @@
+function int2Hex(value) {
+    return Number(value)
+        .toString(16)
+        .toUpperCase();
+}
+
 export class ProgramTableView {
     constructor(
         table_node, selected_label_node, input_node, memory_change_callback, size) {
@@ -7,6 +13,8 @@ export class ProgramTableView {
         this.size = size;
         this.selectedRow = null;
         this.memory_change_callback = memory_change_callback;
+        this.hex_pad_size = 2;
+        this.dec_pad_size = 3;
     }
 
     init() {
@@ -50,30 +58,36 @@ export class ProgramTableView {
         var index = row.rowIndex;
         this.selected_row = index;
         this.selected_label_node.textContent = index;
-        this.input_node.value = row.cells[1].textContent;
+        let value = row.cells[1].textContent.slice(0, this.dec_pad_size);
+        this.input_node.value = value;
         this.input_node.select();
     }
 
     init_table() {
+        this.currentData = Array(this.size);
+        this.currentData.fill([0, "NOP"])
+
         var tb = this.table_node.cloneNode();
         tb.onclick = this.select_row.bind(this);
 
-
         for (var i = 0, ii = this.size; i < ii; i++ ) {
-            // var row = tb.insertRow();
-            var row = document.createElement("tr")
-            row.classList.add("clickable-row");
-
-            this.addCell(row, i);
-            this.addCell(row, "0");
-            this.addCell(row, "00");
-
-            tb.appendChild(row);
+            this.addRow(tb, i);
         }
 
         this.table_node.replaceWith(tb);
         this.table_node = tb;
-    };
+    }
+
+    addRow(where, row_id) {
+        var row = document.createElement("tr")
+
+        this.addCell(row, row_id.toString().padStart(this.dec_pad_size, '0'));
+        this.addCell(row, '');
+        this.addCell(row, '');
+        this._updateRowValues(row, this.currentData[row_id]);
+
+        where.appendChild(row);
+    }
     addCell(where, what) {
         var text_node = document.createTextNode(what);
         var cell = document.createElement("td");
@@ -81,11 +95,8 @@ export class ProgramTableView {
         where.appendChild(cell);
     }
 
-    int2Hex(value) {
-        return Number(value).toString(16).padStart(2, '0').toUpperCase();
-    }
-
     updateRow(id, new_value) {
+        this.currentData[id] = new_value;
         var row = this.table_node.children[id];
 
         if (typeof row === 'undefined') {
@@ -93,20 +104,48 @@ export class ProgramTableView {
             return
         }
 
-        row.children[1].textContent = new_value;
-        row.children[2].textContent = this.int2Hex(new_value);
-
+        this._updateRowValues(row, new_value);
     }
-
+    _updateRowValues(where, new_value) {
+        let dec_value = new_value[0].toString().padStart(this.dec_pad_size, '0')
+        let hex_value = int2Hex(new_value[0]).padStart(this.hex_pad_size, '0')
+        where.children[1].textContent = dec_value + " ["+ hex_value +"]";
+        where.children[2].textContent = new_value[1];
+    }
     updateTable(newData) {
         if ( newData === undefined ) { throw "No data given." }
         if ( newData.length < this.size ) {
             throw `New data size (${newData.length}) doesn't match the size the table was created ${this.size}`
         }
 
+        //lazy update
         for (var i = 0; i < this.size; i++){
-            this.updateRow(i, newData[i]);
+            if(this.currentData[i][0] !== newData[i][0] || this.currentData[i][1] !== newData[i][1]) {
+                this.updateRow(i, newData[i])
+                break;
+            }
         }
+    }
+}
+
+export class DataTableView extends ProgramTableView {
+    constructor(table_node, selected_label_node, input_node, memory_change_callback, size) {
+        super(table_node, selected_label_node, input_node, memory_change_callback, size);
+    }
+
+    _updateRowValues(where, new_value) {
+        let dec_value = new_value[0].toString().padStart(this.dec_pad_size, '0')
+        let hex_value = int2Hex(new_value).padStart(this.hex_pad_size, '0')
+        where.children[1].textContent = dec_value + " ["+ hex_value +"]";
+    }
+
+    addRow(where, row_id) {
+        var row = document.createElement("tr")
+
+        this.addCell(row, row_id.toString().padStart(this.dec_pad_size, '0'));
+        this.addCell(row, this.currentData[row_id][0]);
+
+        where.appendChild(row);
     }
 }
 
@@ -198,6 +237,9 @@ export class ProcessorViewModel {
 
     }
     setupMemoryView(event) {
+        this.current_memory = Array(this.memory_size);
+        this.current_memory.fill([0, "NOP"]);
+
         var p_table = this.node.querySelector(`#memContainer`);
         var programViewInput = this.node.querySelector(`#memInput`);
         var programRowSelected = this.node.querySelector(`#selMem`);
@@ -209,11 +251,13 @@ export class ProcessorViewModel {
         var d_table = this.node.querySelector(`#dataContainer`);
         var dataViewInput = this.node.querySelector(`#dataInput`);
         var dataRowSelected = this.node.querySelector(`#selData`);
-        this.dataView = new ProgramTableView(
+        this.dataView = new DataTableView(
             d_table, dataRowSelected, dataViewInput,
             this.changeMemoryValue.bind(this), this.memory_size);
         this.dataView.init()
 
+        this.programView.updateTable(this.current_memory);
+        this.dataView.updateTable(this.current_memory);
     }
 
     changeMemoryValue(position, new_value) {
@@ -261,7 +305,7 @@ export class ProcessorViewModel {
     }
 
     setupRiView() {
-        console.log("Settingup decoder")
+        console.log("Setting up decoder")
         this.riView = this.node.querySelector("#riInput");
         this.mnemView = this.node.querySelector("#mnemInput");
         this.decoder = new NeanderMnemonicDecoder();
@@ -326,11 +370,28 @@ export class ProcessorViewModel {
     }
 
     updateMemoryView(state) {
-        this.programView.updateTable(state.mem);
+        let delta = this.checkDataChanges(state.mem);
+
+        for (var i in delta) {
+            this.programView.updateRow(i, this.current_memory[i]);
+            this.dataView.updateRow(i, this.current_memory[i]);
+        }
         this.programView.highlight_row(state.pc);
-        this.dataView.updateTable(state.mem);
     }
 
+    checkDataChanges(data){
+        var position_delta = [];
+
+        for ( var i = 0; i < this.memory_size; i++){
+            if(data[i] !== this.current_memory[i][0]) {
+                /// Updates value on current memory
+                this.current_memory[i] = data[i]
+                position_delta.push(i);
+            }
+        }
+
+        return position_delta;
+    }
     updateRegisterView(state) {
         this.reg.registerSet(state.acc, state.pc, state.nf, state.zf, state.mem_access_counter, state.instruction_counter);
     }
