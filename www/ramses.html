@@ -35,25 +35,27 @@
     </div>
 </nav>
 
-<div class="card-body" id="ramsesUi">
-    <h2>Simulador Ramses</h2>
+<div class="container" id="ramsesUi">
+    <h2 class="text-center">Simulador Ramses</h2>
     <div class="row">
-        <div class="col-4" id="memoryArea">
-            <table id="memoryHeader" class="table table-sm table-bordered display memory" cellspacing="0"
-                   width="100%">
+        <div class="col-5" id="memoryArea">
+            <table id="memoryHeader" class="table table-sm table-borderless data-header">
                 <thead>
                 <tr>
-                    <th class="th-sm">#</th>
-                    <th class="th-sm">Value</th>
-                    <th class="th-sm">Hex</th>
+                    <th class="w-25">Ender.</th>
+                    <th class="w-25">Dado[Hex]</th>
+                    <th class="w-50">Mnemônico</th>
                 </tr>
-                
                 </thead>
             </table>
-            <div class="overflow-auto" style="height: 300px">
-                <table id="memoryTable" class="table table-sm table-bordered memory" cellspacing="0">
-                    <tbody id="memContainer">
-                    <template><tr></tr></template>
+            <div class="data-container">
+                <table id="memoryTable" class="table table-sm table-bordered table-hover w-100">
+                    <colgroup>
+                        <col class="w-25">
+                        <col class="w-25">
+                        <col class="w-50">
+                    </colgroup>
+                    <tbody class="data-body" id="memContainer">
                     </tbody>
                 </table>
             </div>
@@ -62,7 +64,7 @@
                 <input class="form-control" type="number" id="memInput" value="0">
             </div>
         </div>
-        <div class="col" id="registerArea">
+        <div class="col-4" id="registerArea">
             <div id="registerContainer">
                 <div class="row">
                     <div class="col-6">
@@ -160,23 +162,22 @@
                 </div>
             </div>
         </div>
-        <div class="col-4" id="dataArea">
-            <table id="DataHeader" class="table table-sm table-bordered display memory" cellspacing="0"
-                   width="100%">
+        <div class="col-3" id="dataArea">
+            <table id="dataHeader" class="table table-sm table-borderless data-header">
                 <thead>
                 <tr>
-                    <th class="th-sm">#</th>
-                    <th class="th-sm">Value</th>
-                    <th class="th-sm">Hex</th>
+                    <th class="w-50">Ender.</th>
+                    <th class="w-50">Dado[Hex]</th>
                 </tr>
-                
                 </thead>
             </table>
             <div class="overflow-auto" style="height: 300px">
-                <table id="dataTable" class="table table-sm table-bordered memory" cellspacing="0">
+                <table id="dataTable" class="table table-sm table-bordered table-hover w-100">
+                    <colgroup>
+                        <col class="w-50">
+                        <col class="w-50">
+                    </colgroup>
                     <tbody id="dataContainer">
-                    <template><tr></tr></template>
-                    
                     </tbody>
                 </table>
             </div>

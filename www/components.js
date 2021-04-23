@@ -64,8 +64,8 @@ export class ProgramTableView {
     }
 
     init_table() {
-        this.currentData = Array(this.size);
-        this.currentData.fill([0, "NOP"])
+        this.currentData = Array.from({length:this.size},
+            ()=>([0, "NOP"]));
 
         var tb = this.table_node.cloneNode();
         tb.onclick = this.select_row.bind(this);
@@ -84,7 +84,7 @@ export class ProgramTableView {
         this.addCell(row, row_id.toString().padStart(this.dec_pad_size, '0'));
         this.addCell(row, '');
         this.addCell(row, '');
-        this._updateRowValues(row, this.currentData[row_id]);
+        this.updateRowValues(row, this.currentData[row_id]);
 
         where.appendChild(row);
     }
@@ -104,9 +104,9 @@ export class ProgramTableView {
             return
         }
 
-        this._updateRowValues(row, new_value);
+        this.updateRowValues(row, new_value);
     }
-    _updateRowValues(where, new_value) {
+    updateRowValues(where, new_value) {
         let dec_value = new_value[0].toString().padStart(this.dec_pad_size, '0')
         let hex_value = int2Hex(new_value[0]).padStart(this.hex_pad_size, '0')
         where.children[1].textContent = dec_value + " ["+ hex_value +"]";
@@ -133,9 +133,9 @@ export class DataTableView extends ProgramTableView {
         super(table_node, selected_label_node, input_node, memory_change_callback, size);
     }
 
-    _updateRowValues(where, new_value) {
+    updateRowValues(where, new_value) {
         let dec_value = new_value[0].toString().padStart(this.dec_pad_size, '0')
-        let hex_value = int2Hex(new_value).padStart(this.hex_pad_size, '0')
+        let hex_value = int2Hex(new_value[0]).padStart(this.hex_pad_size, '0')
         where.children[1].textContent = dec_value + " ["+ hex_value +"]";
     }
 
@@ -143,7 +143,8 @@ export class DataTableView extends ProgramTableView {
         var row = document.createElement("tr")
 
         this.addCell(row, row_id.toString().padStart(this.dec_pad_size, '0'));
-        this.addCell(row, this.currentData[row_id][0]);
+        this.addCell(row, '');
+        this.updateRowValues(row, this.currentData[row_id])
 
         where.appendChild(row);
     }
@@ -233,12 +234,10 @@ export class ProcessorViewModel {
 
         }
         this.fileReader = new FileReader();
-
-
     }
     setupMemoryView(event) {
-        this.current_memory = Array(this.memory_size);
-        this.current_memory.fill([0, "NOP"]);
+        this.current_memory = Array.from({length:this.memory_size},
+                                    ()=>([0, "NOP"]));
 
         var p_table = this.node.querySelector(`#memContainer`);
         var programViewInput = this.node.querySelector(`#memInput`);
@@ -264,8 +263,7 @@ export class ProcessorViewModel {
         new_value = Number(new_value);
         if (!isNaN(new_value) && new_value >= 0 && new_value < 256) {
             this.cpu.set_mem(position, new_value);
-            this.dataView.updateRow(position, new_value);
-            this.programView.updateRow(position, new_value);
+            this.updateMemoryView(this.cpu.get_state());
         }
     }
 
@@ -370,28 +368,69 @@ export class ProcessorViewModel {
     }
 
     updateMemoryView(state) {
-        let delta = this.checkDataChanges(state.mem);
+        var delta = this.checkDataChanges(state.mem);
+        var changed = []
+        for(let i of delta) {
+            changed = changed.concat(this.updateMnemonic(i));
+        }
+        delta = [...new Set(changed)].sort();
 
-        for (var i in delta) {
+        for (let i of delta) {
             this.programView.updateRow(i, this.current_memory[i]);
             this.dataView.updateRow(i, this.current_memory[i]);
         }
         this.programView.highlight_row(state.pc);
     }
 
+    updateMnemonic(delta_pos){
+        var instruction_start_pos = delta_pos;
+        var changed_pos = [];
+        while(instruction_start_pos !== 0 && this.current_memory[instruction_start_pos][1] === ""){
+            /// Empty mnemonic position mean that pos is part of a instruction
+            instruction_start_pos--;
+        }
+
+        // Line changed is already the begining of a instruction
+        var decoded_instruction =
+            this.decoder.decodeRI(this.current_memory[instruction_start_pos][0]);
+        let address_pos = instruction_start_pos+1;
+        if (address_pos < this.memory_size ) {
+            decoded_instruction[1] = decoded_instruction[1].replace('end', this.current_memory[address_pos][0]);
+        }
+
+        let instr_arity = decoded_instruction[0];
+
+        this.current_memory[instruction_start_pos][1] = decoded_instruction[1];
+        changed_pos.push(instruction_start_pos);
+        for (var i = 1; i< this.memory_size && i <= instr_arity; i++){
+            // Empty position with no mnemonic
+            this.current_memory[instruction_start_pos+i][1] = "";
+            changed_pos.push(instruction_start_pos+i);
+        }
+
+        let after_instr = instruction_start_pos+instr_arity+1;
+        if(after_instr < this.memory_size && this.current_memory[after_instr][1] === ""){
+            // If mnen is empty, this position was part of the previous instruction
+            this.current_memory[after_instr][1] = "??";
+            changed_pos = changed_pos.concat(this.updateMnemonic(after_instr));
+        }
+
+        return changed_pos;
+    }
+
     checkDataChanges(data){
         var position_delta = [];
-
         for ( var i = 0; i < this.memory_size; i++){
             if(data[i] !== this.current_memory[i][0]) {
                 /// Updates value on current memory
-                this.current_memory[i] = data[i]
+                this.current_memory[i][0] = data[i]
                 position_delta.push(i);
             }
         }
 
         return position_delta;
     }
+
     updateRegisterView(state) {
         this.reg.registerSet(state.acc, state.pc, state.nf, state.zf, state.mem_access_counter, state.instruction_counter);
     }
@@ -419,10 +458,19 @@ export class ProcessorViewModel {
 
 }
 
+export class InstructionMnemonic {
+    constructor(arity, mnem) {
+        this.arity = arity;
+        this.mnem = mnem;
+    }
+
+    toString() { return this.mnem }
+}
+
 export class NeanderMnemonicDecoder {
     constructor() {
         this.decodingTable = {
-            256: [0, "???"],
+            256: [0, " "],
             0: [0, "NOP"],
             16: [1, "STA end"],
             32: [1, "LDA end"],

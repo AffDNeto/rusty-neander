@@ -35,8 +35,8 @@
     </div>
 </nav>
 
-<div class="container-lg" id="neanderUi">
-    <h2>Neander Wasm</h2>
+<div class="container" id="neanderUi">
+    <div class="col text-center"><h2>Simulador Neander</h2></div>
     <div class="row">
         <div class="col-5" id="memoryArea">
             <table id="memoryHeader" class="table table-sm table-borderless data-header">
@@ -46,7 +46,6 @@
                     <th class="w-25">Dado[Hex]</th>
                     <th class="w-50">Mnemônico</th>
                 </tr>
-                
                 </thead>
             </table>
             <div class="data-container">
@@ -65,7 +64,7 @@
                 <input class="form-control" type="number" id="memInput" value="0">
             </div>
         </div>
-        <div class="col-5" id="registerContainer">
+        <div class="col-4" id="registerContainer">
             <div class="row" id="modelMenu">
                 <div class="col-6">
                     <label for="memFile" class="btn btn-secondary">
@@ -160,7 +159,7 @@
                 <input type="number" pattern="[0-9]*" name="steps to run" id="stepNum" class="input-group-text">
             </div>
         </div>
-        <div class="col-2" id="dataArea">
+        <div class="col-3" id="dataArea">
             <table id="dataHeader" class="table table-sm table-borderless data-header">
                 <thead>
                 <tr>

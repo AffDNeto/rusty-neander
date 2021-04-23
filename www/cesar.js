@@ -62,6 +62,7 @@ export class CesarRegisterController extends RegisterController {
         );
     }
 }
+
 export class CesarView extends ProcessorViewModel {
     constructor(node, model){
         super(node, model);
@@ -105,9 +106,8 @@ export class CesarView extends ProcessorViewModel {
     updateMemoryView(state) {
         let ptr = this.cpu.get_memory();
         let mem = new Uint8Array(wasm_bg.memory.buffer, ptr, this.memory_size);
-        this.programView.updateTable(mem);
-        this.dataView.updateTable(mem)
-        this.programView.highlight_row(state.pc);
+        state.mem = mem;
+        super.updateMemoryView(state);
         this.updateVisor();
     }
 
