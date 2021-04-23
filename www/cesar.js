@@ -139,7 +139,7 @@ export class CesarView extends ProcessorViewModel {
 
     updateRiView(state) {
         let ri = state.ri;
-        let decodedRi = this.decoder.decodeRI(ri);
+        let decodedRi = this.decoder.decodeInstruction(ri);
         this.riView.value = ri[0];
 
         if (parseInt(decodedRi[0]) >= 1 ){
@@ -147,6 +147,35 @@ export class CesarView extends ProcessorViewModel {
         }
 
         this.mnemView.value = decodedRi[1].replace('end', ri[1]);
+    }
+
+    decodeInstructionFromPosition(position) {
+        let instruction_codes = [
+            this.current_memory[position][0],
+            ((position+1)<this.memory_size)?this.current_memory[position+1][0]:0
+        ]
+        var decoded_instruction = this.decoder.decodeInstruction(instruction_codes);
+
+        let split_mnem = decoded_instruction[1].split(' ');
+
+        if (split_mnem[1] !== undefined && split_mnem[1].split('end').length > 1) {
+            decoded_instruction[1] = decoded_instruction[1].replace('end', this.getWord(position+2));
+        }
+
+        if (split_mnem[2] !== undefined && split_mnem[2].split('end').length > 1) {
+            decoded_instruction[1] = decoded_instruction[1].replace('end', this.getWord(position+4));
+        }
+
+        return decoded_instruction;
+    }
+
+    getWord(position) {
+        if (position+1 < this.memory_size) {
+            // Check if both bytes are inside the memory
+            return (this.current_memory[position][0] << 8)+ this.current_memory[position+1][0]
+        }else{
+            return '???'
+        }
     }
 }
 
@@ -232,13 +261,16 @@ class CesarMnemonicDecoder {
 
     decodeRegMode(reg, mode){
         var arity = 0;
-
-        if ((mode == 1 || mode == 5) && reg == 7) {
+        mode = Number(mode);
+        if ((mode === 3 || mode === 7)
+            || (Number(reg) === 7 && (mode === 1 || mode === 5))
+        ) {
             arity += 2; // Instruction uses the next 2 positions to execute
         }
 
         return [this.modeTable[mode].replace('reg', "R"+reg), arity];
     }
+
     decodeFlagOp(ri) {
         var code = (ri[0] & parseInt("f0", 16)) >> 4;
         var mnem;
@@ -282,12 +314,14 @@ class CesarMnemonicDecoder {
         let mnem = "JMP "+regMode[0];
         return [1+regMode[1], mnem]
     }
+
     decodeSOB(ri) {
         console.debug("sob", ti);
         let r = this.extractCode(ri[0],'111', 2);
 
         return [1, "SOB R"+r+",end"]
     }
+
     decodeJSR(ri) {
         console.debug("jsr", ri)
         let r1 = this.extractCode(ri[0], '111', 2);
@@ -333,7 +367,7 @@ class CesarMnemonicDecoder {
         return [arity, mnem];
     }
 
-    decodeRI(ri) {
+    decodeInstruction(ri) {
         console.debug('Decoding '+ri)
         let code = (ri[0] & parseInt('11110000', 2)) >> 4;
         let mnem = this.decodingTable[code];
@@ -342,10 +376,10 @@ class CesarMnemonicDecoder {
 
         if ( (typeof mnem) === "function" ) {
             try {
-                return mnem.bind(this)(ri);
+                mnem = mnem.bind(this)(ri);
             } catch (e) {
                 console.error(e)
-                return this.unknown;
+                mnem = this.unknown;
             }
         }
 

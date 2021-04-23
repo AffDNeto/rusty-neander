@@ -391,17 +391,16 @@ export class ProcessorViewModel {
         }
 
         // Line changed is already the begining of a instruction
-        var decoded_instruction =
-            this.decoder.decodeRI(this.current_memory[instruction_start_pos][0]);
-        let address_pos = instruction_start_pos+1;
-        if (address_pos < this.memory_size ) {
-            decoded_instruction[1] = decoded_instruction[1].replace('end', this.current_memory[address_pos][0]);
-        }
+        var decoded_instruction = this.decodeInstructionFromPosition(instruction_start_pos);
 
+        let address_pos = instruction_start_pos+1;
         let instr_arity = decoded_instruction[0];
 
         this.current_memory[instruction_start_pos][1] = decoded_instruction[1];
         changed_pos.push(instruction_start_pos);
+        if(instr_arity > 1){
+            console.log('here');
+        }
         for (var i = 1; i< this.memory_size && i <= instr_arity; i++){
             // Empty position with no mnemonic
             this.current_memory[instruction_start_pos+i][1] = "";
@@ -418,6 +417,17 @@ export class ProcessorViewModel {
         return changed_pos;
     }
 
+    decodeInstructionFromPosition(position) {
+        var decoded_instruction = this.decoder.decodeInstruction(
+            this.current_memory[position][0]
+        );
+        if (position+1 < this.memory_size ) {
+            decoded_instruction[1] = decoded_instruction[1].replace(
+                    'end', this.current_memory[position+1][0]
+            );
+        }
+        return decoded_instruction;
+    }
     checkDataChanges(data){
         var position_delta = [];
         for ( var i = 0; i < this.memory_size; i++){
@@ -445,7 +455,7 @@ export class ProcessorViewModel {
 
     updateRiView(state) {
         let [line, i] = state.ri
-        let decodedRI = this.decoder.decodeRI(i);
+        let decodedRI = this.decoder.decodeInstruction(i);
         this.riView.value = i;
         var mnem_value = decodedRI[1];
         if(parseInt(decodedRI[0])===1) {
@@ -487,7 +497,7 @@ export class NeanderMnemonicDecoder {
 
     // Decodes instruction based on it's value
     // and return it's arity and mnemonic
-    decodeRI(ri){
+    decodeInstruction(ri){
         // Extract instruction code
         let code = ri & 240;
         let mnem = this.decodingTable[code];

@@ -93,7 +93,7 @@ class AhmesMnemonicDecoder extends NeanderMnemonicDecoder {
         this.decodingTable = Object.assign({}, this.decodingTable, ahmesTable);
     }
 
-    decodeRI(ri) {
+    decodeInstruction(ri) {
         let code = ri & parseInt("11110000", 2); // Extract only the first 4 bits
         var mnem = this.decodingTable[code];
 

@@ -113,7 +113,7 @@ class RamsesMnemonicDecoder extends NeanderMnemonicDecoder {
         }
     }
 
-    decodeRI(ri) {
+    decodeInstruction(ri) {
         let code = ri & parseInt('11110000', 2);
         let mode = ri & parseInt('00000011', 2);
         let reg = (ri & parseInt('00001100', 2)) >> 2;
