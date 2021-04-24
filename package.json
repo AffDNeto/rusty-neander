@@ -1,15 +1,15 @@
 {
   "author": "Affonso Dick Neto",
   "name": "hypotetical-emulators",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "repository": "https://github.com/AffDNeto/rusty-neander",
   "scripts": {
-    "build-prod": "webpack --mode production",
-    "build": "webpack --verbose",
+    "build-prod": "webpack --mode production --context www --config www/webpack.config.js",
+    "build": "webpack --verbose --context www --config www/webpack.config.js",
     "serve": "webpack-dev-server --verbose --context www --config www/webpack.config.js"
   },
   "devDependencies": {
-    "@wasm-tool/wasm-pack-plugin": "1.0.1",
+    "@wasm-tool/wasm-pack-plugin": " 1.0.1",
     "clean-webpack-plugin": "3.0.0",
     "css-loader": "5.0.1",
     "exports-loader": "2.0.0",
