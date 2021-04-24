@@ -1,9 +1,11 @@
 'use strict';
 
-require('./components.js');
+import {Flag, RegisterController} from "./view_components/register";
+
+require('./view_components/components.js');
 require('./style.css');
 
-import {ProcessorViewModel, RegisterController, Flag, read65kMemFile} from "./components";
+import {ProcessorViewModel, read65kMemFile} from "./view_components/components";
 import('../crate-wasm/pkg/index_bg')
     .then( module => {
         window.wasm_bg = module;
@@ -91,7 +93,7 @@ export class CesarView extends ProcessorViewModel {
     }
 
     setupMemoryView(event) {
-        this.memory_size = 1050;
+        this.memory_size = 65536;
         super.setupMemoryView(event);
     }
 

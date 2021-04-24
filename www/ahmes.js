@@ -1,12 +1,14 @@
 'use strict';
 
+import {Flag, RegisterController} from "./view_components/register";
+
 require('./ahmes.html');
-require('.//components.js')
+require('./view_components/components.js')
 require('./style.css');
 require('bootstrap');
 require('jquery');
 
-import {ProcessorViewModel, RegisterController, Flag, NeanderMnemonicDecoder} from "./components";
+import {ProcessorViewModel, NeanderMnemonicDecoder} from "./view_components/components";
 
 const rust = import('../crate-wasm/pkg');
 

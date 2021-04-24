@@ -5,7 +5,7 @@ require('./style.css');
 require('bootstrap');
 require('jquery');
 
-import { ProcessorViewModel} from "./components";
+import { ProcessorViewModel} from "./view_components/components";
 
 const rust = import('../crate-wasm/pkg');
 

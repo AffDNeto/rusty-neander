@@ -1,198 +1,10 @@
-function int2Hex(value) {
+import {DataTableView, ProgramTableView} from "./table";
+import {RegisterController} from "./register";
+
+export function int2Hex(value) {
     return Number(value)
         .toString(16)
         .toUpperCase();
-}
-
-export class ProgramTableView {
-    constructor(
-        table_node, selected_label_node, input_node, memory_change_callback, size) {
-        this.table_node = table_node;
-        this.selected_label_node = selected_label_node;
-        this.input_node = input_node;
-        this.size = size;
-        this.selectedRow = null;
-        this.memory_change_callback = memory_change_callback;
-        this.hex_pad_size = 2;
-        this.dec_pad_size = 3;
-    }
-
-    init() {
-        this.init_table();
-        this.init_input();
-    }
-
-    init_input() {
-        this.input_node.onkeyup = (ev) => {
-            console.info("Input for memory", ev, this);
-            if (ev.key === 'Enter' || ev.keyCode === 13){
-                this.change_value.bind(this)(ev);
-            }
-        };
-        this.selected_row = 0;
-        this.selected_label_node.textContent = this.selected_row;
-    }
-
-    change_value(ev) {
-        this.memory_change_callback(this.selected_row, ev.target.value);
-    }
-
-    highlight_row(pos){
-        let row = this.table_node.rows[pos];
-        if (row === null || typeof row == "undefined") {
-            console.error('Out of range index for table:', {pos});
-        }
-        console.debug(row)
-        row.scrollIntoView(true);
-        if (!row.classList.contains("table-active")) {
-            row.classList.add('table-active');
-            if (this.selectedRow != null) {
-                this.selectedRow.classList.remove('table-active');
-            }
-            this.selectedRow = row;
-        }
-    }
-
-    select_row(e) {
-        var row = e.target.parentElement;
-        var index = row.rowIndex;
-        this.selected_row = index;
-        this.selected_label_node.textContent = index;
-        let value = row.cells[1].textContent.slice(0, this.dec_pad_size);
-        this.input_node.value = value;
-        this.input_node.select();
-    }
-
-    init_table() {
-        this.currentData = Array.from({length:this.size},
-            ()=>([0, "NOP"]));
-
-        var tb = this.table_node.cloneNode();
-        tb.onclick = this.select_row.bind(this);
-
-        for (var i = 0, ii = this.size; i < ii; i++ ) {
-            this.addRow(tb, i);
-        }
-
-        this.table_node.replaceWith(tb);
-        this.table_node = tb;
-    }
-
-    addRow(where, row_id) {
-        var row = document.createElement("tr")
-
-        this.addCell(row, row_id.toString().padStart(this.dec_pad_size, '0'));
-        this.addCell(row, '');
-        this.addCell(row, '');
-        this.updateRowValues(row, this.currentData[row_id]);
-
-        where.appendChild(row);
-    }
-    addCell(where, what) {
-        var text_node = document.createTextNode(what);
-        var cell = document.createElement("td");
-        cell.appendChild(text_node);
-        where.appendChild(cell);
-    }
-
-    updateRow(id, new_value) {
-        this.currentData[id] = new_value;
-        var row = this.table_node.children[id];
-
-        if (typeof row === 'undefined') {
-            console.error("Couldn't find row number"+id)
-            return
-        }
-
-        this.updateRowValues(row, new_value);
-    }
-    updateRowValues(where, new_value) {
-        let dec_value = new_value[0].toString().padStart(this.dec_pad_size, '0')
-        let hex_value = int2Hex(new_value[0]).padStart(this.hex_pad_size, '0')
-        where.children[1].textContent = dec_value + " ["+ hex_value +"]";
-        where.children[2].textContent = new_value[1];
-    }
-    updateTable(newData) {
-        if ( newData === undefined ) { throw "No data given." }
-        if ( newData.length < this.size ) {
-            throw `New data size (${newData.length}) doesn't match the size the table was created ${this.size}`
-        }
-
-        //lazy update
-        for (var i = 0; i < this.size; i++){
-            if(this.currentData[i][0] !== newData[i][0] || this.currentData[i][1] !== newData[i][1]) {
-                this.updateRow(i, newData[i])
-                break;
-            }
-        }
-    }
-}
-
-export class DataTableView extends ProgramTableView {
-    constructor(table_node, selected_label_node, input_node, memory_change_callback, size) {
-        super(table_node, selected_label_node, input_node, memory_change_callback, size);
-    }
-
-    updateRowValues(where, new_value) {
-        let dec_value = new_value[0].toString().padStart(this.dec_pad_size, '0')
-        let hex_value = int2Hex(new_value[0]).padStart(this.hex_pad_size, '0')
-        where.children[1].textContent = dec_value + " ["+ hex_value +"]";
-    }
-
-    addRow(where, row_id) {
-        var row = document.createElement("tr")
-
-        this.addCell(row, row_id.toString().padStart(this.dec_pad_size, '0'));
-        this.addCell(row, '');
-        this.updateRowValues(row, this.currentData[row_id])
-
-        where.appendChild(row);
-    }
-}
-
-export class RegisterController {
-    constructor(where){
-        this.node = where
-
-        this.accInput = this.node.querySelector(`#accInput`);
-        this.pcInput = this.node.querySelector(`#pcInput`);
-        this.btn_n = new Flag(this.node.querySelector("#btn-flag-n"))
-        this.btn_z = new Flag(this.node.querySelector("#btn-flag-z"))
-        this.access = this.node.querySelector(`#memAccess`);
-        this.instructions = this.node.querySelector(`#instCount`);
-    }
-
-    registerSet(acc, pc, nFlag, zFlag, memAccess, instAccess){
-
-        this.accInput.value = acc;
-        this.pcInput.value = pc;
-        this.access.value = memAccess;
-        this.instructions.value = instAccess;
-        this.btn_n.set_flag(nFlag);
-        this.btn_z.set_flag(zFlag);
-    }
-
-    init(){
-        this.registerSet(0,0,1,1,0,0,0);
-    }
-}
-
-export class Flag{
-    constructor(node) {
-        this.node = node
-        this.set_flag(false)
-    }
-
-    set_flag(set){
-        if(set) {
-            this.node.classList.remove("btn-danger");
-            this.node.classList.add("btn-success");
-        }else {
-            this.node.classList.remove("btn-success");
-            this.node.classList.add("btn-danger");
-        }
-
-    }
 }
 
 export class ProcessorViewModel {
@@ -239,20 +51,28 @@ export class ProcessorViewModel {
         this.current_memory = Array.from({length:this.memory_size},
                                     ()=>([0, "NOP"]));
 
-        var p_table = this.node.querySelector(`#memContainer`);
-        var programViewInput = this.node.querySelector(`#memInput`);
-        var programRowSelected = this.node.querySelector(`#selMem`);
+        let program_paddings = [
+            this.node.querySelector('#program-top-padding'),
+            this.node.querySelector('#program-bottom-padding'),
+            ]
+        let p_table = this.node.querySelector(`#memContainer`);
+        let programViewInput = this.node.querySelector(`#memInput`);
+        let programRowSelected = this.node.querySelector(`#selMem`);
         this.programView = new ProgramTableView(
             p_table, programRowSelected, programViewInput,
-            this.changeMemoryValue.bind(this), this.memory_size);
+            this.changeMemoryValue.bind(this), this.memory_size, program_paddings);
         this.programView.init();
 
+        let data_paddings = [
+            this.node.querySelector('#data-top-padding'),
+            this.node.querySelector('#data-bottom-padding'),
+        ]
         var d_table = this.node.querySelector(`#dataContainer`);
         var dataViewInput = this.node.querySelector(`#dataInput`);
         var dataRowSelected = this.node.querySelector(`#selData`);
         this.dataView = new DataTableView(
             d_table, dataRowSelected, dataViewInput,
-            this.changeMemoryValue.bind(this), this.memory_size);
+            this.changeMemoryValue.bind(this), this.memory_size, data_paddings);
         this.dataView.init()
 
         this.programView.updateTable(this.current_memory);
@@ -466,15 +286,6 @@ export class ProcessorViewModel {
         this.mnemView.value = mnem_value;
     }
 
-}
-
-export class InstructionMnemonic {
-    constructor(arity, mnem) {
-        this.arity = arity;
-        this.mnem = mnem;
-    }
-
-    toString() { return this.mnem }
 }
 
 export class NeanderMnemonicDecoder {
