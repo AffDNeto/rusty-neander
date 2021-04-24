@@ -47,6 +47,7 @@ export class ProcessorViewModel {
         }
         this.fileReader = new FileReader();
     }
+
     setupMemoryView(event) {
         this.current_memory = Array.from({length:this.memory_size},
                                     ()=>([0, "NOP"]));
@@ -110,6 +111,7 @@ export class ProcessorViewModel {
     createRegisterController(node) {
         return new RegisterController(node);
     }
+
     setupRegistersView() {
         var node = this.node.querySelector(`#registerContainer`);
         this.reg = this.createRegisterController(node);
@@ -128,6 +130,7 @@ export class ProcessorViewModel {
         this.mnemView = this.node.querySelector("#mnemInput");
         this.decoder = new NeanderMnemonicDecoder();
     }
+
     setupRegOnchangeCallbacks(){
         //sets up the callbacks for updating the registers
         this.reg.pcInput.onchange = (e) => {
@@ -135,7 +138,6 @@ export class ProcessorViewModel {
             if ( isNaN(nv) || !(0 <= nv && nv <= 255) )  return false
             this.cpu.set_pc(nv)
             this.programView.highlight_row(nv);
-            this.reg.pcInput.value = nv
             e.target.value = nv
             return true
         };

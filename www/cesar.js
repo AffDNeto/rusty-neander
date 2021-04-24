@@ -87,6 +87,25 @@ export class CesarView extends ProcessorViewModel {
 
     }
 
+    setupRegOnchangeCallbacks() {
+        let onChangeBuilder = (target) => {
+            return (e) => {
+                var nv = Number(e.target.value);
+                if ( isNaN(nv) || !(0 <= nv && nv < 65536) )  return false
+                this.cpu.set_register(target, nv);
+                if(target === 7 ){
+                    this.programView.highlight_row(nv);
+                }
+                e.target.value = nv
+                return true
+            }
+        }
+
+        for( let i=0; i<=7; i++) {
+            this.reg.rx[i].onchange = onChangeBuilder(i);
+        }
+    }
+
     setupRiView() {
         super.setupRiView();
         this.decoder = new CesarMnemonicDecoder();
