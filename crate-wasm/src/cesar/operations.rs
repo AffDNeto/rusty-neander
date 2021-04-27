@@ -101,12 +101,13 @@ pub(crate) fn inc(a: u16, flags: &mut ConditionFlags) -> u16 {
 /// Returns a+b
 /// N: t, Z: t, V: t, C: t
 pub(crate) fn add(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
-    let s_a = a as i16;
-    let s_b = b as i16;
-    let (s_d, overflow) = s_a.overflowing_add(s_b);
-    let d = s_d as u16;
-
+    let d = a.wrapping_add(b);
+    let s_a = a & 0x8000;
+    let s_b = b & 0x8000;
+    let s_d = d & 0x8000;
+    let overflow = (s_a == s_b) && (s_a != s_d);
     compute_flags(d, flags);
+
     flags.v = overflow;
     flags.c = (d < a) | (d < b);
 
@@ -140,14 +141,16 @@ pub(crate) fn dec(a: u16, flags: &mut ConditionFlags) -> u16 {
 /// N: t, Z: t, V: t, C: not(t)
 pub(crate) fn sub(a:u16, b:u16, flags: &mut ConditionFlags ) -> u16 {
     trace!("Subtracting {} from {}", b, a);
-    let s_a = a as i16;
-    let s_b = b as i16;
-    let (s_d, overflow) = s_a.overflowing_sub(s_b);
-    let d = s_d as u16;
+    let d = a.wrapping_sub(b);
+
+    let s_a = a & 0x8000;
+    let s_b = b & 0x8000;
+    let s_d = d & 0x8000;
+
     trace!("Sub result {d:#X}:{d}, {sd:#X}:{sd}", d=d,sd=s_d);
     compute_flags(d, flags);
-    flags.v = overflow;
-    flags.c = (d >= a) & (d >= b);
+    flags.v = s_a != s_b && s_a != s_d;
+    flags.c = a < d && b < d;
 
     return d
 }

@@ -22,8 +22,13 @@ pub trait SimpleAlu {
 
     fn add(&mut self, a: u8, b: u8) -> u8{
         // on unsigned operations an overflow means a carry in signed operations
-        let (result, carry) = a.overflowing_add(b);
-        let (_, overflow) = (a as i8).overflowing_add(b as i8);
+        let result = a.wrapping_add(b);
+        let carry = (result<a) | (result<b);
+        let sa = a & 0x80;
+        let sb = b & 0x80;
+        let sresult = result & 0x80;
+        // if a and b have the same signal and the result signal is different, then an overflow happened
+        let overflow = (sa==sb) && (sa!=sresult);
 
         self.set_carry(carry);
         self.set_overflow(overflow);
@@ -54,8 +59,12 @@ pub trait SimpleAlu {
 
 pub trait ExtendedALU: SimpleAlu {
     fn sub(&mut self, a:u8, b: u8) -> u8 {
-        let (result, borrow) = a.overflowing_sub(b);
-        let (_, overflow) = (a as i8).overflowing_sub(b as i8);
+        let result= a.wrapping_sub(b);
+        let borrow = a < b;
+        let sa = a & 0x80;
+        let sb = b & 0x80;
+        let sresult = result & 0x80;
+        let overflow = (sa!=sb) && (sa!=sresult);
 
         self.set_borrow(borrow);
         self.set_overflow(overflow);
