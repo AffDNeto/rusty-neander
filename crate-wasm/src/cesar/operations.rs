@@ -13,7 +13,7 @@ fn compute_flags(value:u16, flags: &mut ConditionFlags){
     flags.z = value == 0;
 }
 
-// Returns 0 and sets flags with it, C and V are set to 0
+/// Returns 0 and sets flags with it, C and V are set to 0
 pub(crate) fn clr(flags: &mut ConditionFlags ) -> u16 {
     flags.z = true;
     flags.n = false;

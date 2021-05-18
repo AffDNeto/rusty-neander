@@ -78,6 +78,7 @@ impl AhmesJS {
     pub fn clear_counters(&mut self) {
         self.cpu.instruction_counter = 0;
         self.cpu.memory_access = 0;
+        self.cpu.pc = 0;
     }
 
     pub fn set_mem(&mut self, pos: usize, value: u8){

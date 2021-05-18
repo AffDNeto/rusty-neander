@@ -89,8 +89,9 @@ export class ProcessorViewModel {
     }
 
     setupExecuteView() {
+        this.excuteSteps = 2**64;
+        this.updateSteps = true;
         this.stepsInput = this.node.querySelector(`#stepNum`);
-        this.excuteSteps = 100;
         this.stepsInput.value = this.excuteSteps;
         this.stepsInput.onchange = this.updateExecuteSteps.bind(this);
 
@@ -178,13 +179,18 @@ export class ProcessorViewModel {
         if (remainingSteps <= 0) {this.running = false;}
 
         if(this.running) {
-            var result = this.cpu.execute(1);
-            this.updateView();
-
+            if(this.updateSteps) {
+                var result = this.cpu.execute(1);
+                this.updateView();
+            }else {
+                var result = this.cpu.execute(2**14)
+            }
             this.running = result;
             setTimeout(() => {
                 this.continue(remainingSteps - 1);
-            }, 1)
+            }, 0)
+        } else {
+            this.updateView();
         }
 
     }
@@ -220,10 +226,8 @@ export class ProcessorViewModel {
 
         this.current_memory[instruction_start_pos][1] = decoded_instruction[1];
         changed_pos.push(instruction_start_pos);
-        if(instr_arity > 1){
-            console.log('here');
-        }
-        for (var i = 1; i< this.memory_size && i <= instr_arity; i++){
+
+        for (var i = 1; (i+instruction_start_pos)< this.memory_size && i <= instr_arity; i++){
             // Empty position with no mnemonic
             this.current_memory[instruction_start_pos+i][1] = "";
             changed_pos.push(instruction_start_pos+i);
@@ -347,3 +351,23 @@ export function read65kMemFile(fileByteArray){
 
 }
 
+export async function test(m, times) {
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    function s(m) {
+        m.btnRun.click();
+        return setTimeout( () => { m.btnStop.click()}, 10*1000);
+    }
+
+    var results = []
+    for(var i = 0; i<times;i++){
+        m.clear_btn.click()
+        s(m); await sleep(11*1000)
+        results.push(m.reg.instructions.value)
+        console.log("test ", i)
+    }
+    console.log(results)
+}
+
+window.test = test

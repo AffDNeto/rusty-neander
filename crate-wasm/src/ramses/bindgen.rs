@@ -75,6 +75,7 @@ impl RamsesJsInterface {
     pub fn clear_counters(&mut self) {
         self.cpu.instruction_counter = 0;
         self.cpu.memory_access = 0;
+        self.cpu.pc = 0;
     }
 
     pub fn set_register(&mut self, id: u8, new_value: u8) {

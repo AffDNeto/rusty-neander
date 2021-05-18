@@ -1,4 +1,4 @@
-; Testa subrotina
+cd ; Testa subrotina
 LDR A #0
 LDR B #0
 JSR SUB1

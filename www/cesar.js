@@ -337,7 +337,7 @@ class CesarMnemonicDecoder {
     }
 
     decodeSOB(ri) {
-        console.debug("sob", ti);
+        console.debug("sob", ri);
         let r = this.extractCode(ri[0],'111', 2);
 
         return [1, "SOB R"+r+",end"]
