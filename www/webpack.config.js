@@ -20,7 +20,7 @@ module.exports = {
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: '[name].[hash].js',
+        filename: '[name].js',
     },
     plugins: [
         new CleanWebpackPlugin(),
@@ -55,7 +55,8 @@ module.exports = {
             filename: "./cesar.html"
         }),
         new WasmPackPlugin({
-            crateDirectory: path.resolve(__dirname, "../crate-wasm")
+            crateDirectory: path.resolve(__dirname, "../crate-wasm"),
+            output:"module.wasm"
         }),
         // Have this example work in Edge which doesn't ship `TextEncoder` or
         // `TextDecoder` at this time.
